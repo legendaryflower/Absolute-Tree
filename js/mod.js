@@ -13,11 +13,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1.1",
+	num: "0.2",
 	name: "Alpha",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+<h3>v0.2 Alpha</h3><br>
+- Added a new layer.<br>
+- Added 4 new Multi Upgrades.<br>
+- Added 2 new Multi Buyables.<br>
+<br><br>
 <h3>v0.1.1 Alpha</h3><br>
 - Game is renamed into Absolute Tree to prevent confusion. 
 <br><br>
@@ -49,6 +54,7 @@ function getPointGen() {
 	if (hasUpgrade("m",12)) gain = gain.times(upgradeEffect("m",12))
 	if (hasUpgrade("m",13)) gain = gain.times(upgradeEffect("m",13))
 	if (hasUpgrade("m",15)) gain = gain.times(upgradeEffect("m",15))
+	if (player.a.unlocked) gain = gain.times(tmp.a.effect)
 	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
 	return gain
 }
@@ -58,12 +64,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 1e14 Points</span>`,
+var displayThings = [`<span>Current Endgame: Have <b>Lucky Chancemakers</b> completed.</span>`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal(1e14))
+	return hasChallenge("a",11)
 }
 
 
