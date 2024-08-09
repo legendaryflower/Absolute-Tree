@@ -22,6 +22,7 @@ let changelog = `<h1>Changelog:</h1><br>
 - Added a new layer.<br>
 - Added 4 new Multi Upgrades.<br>
 - Added 2 new Multi Buyables.<br>
+- Balanced up to a Lucky Chancemakers completion.<br>
 <br><br>
 <h3>v0.1.1 Alpha</h3><br>
 - Game is renamed into Absolute Tree to prevent confusion. 
