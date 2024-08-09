@@ -1,6 +1,6 @@
 let modInfo = {
-	name: "The Multi Tree",
-	id: "TheMultiTree",
+	name: "Absolute Tree",
+	id: "AbsoluteTree",
 	author: "RTLF2024",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
@@ -13,11 +13,14 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
+	num: "0.1.1",
 	name: "Alpha",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+<h3>v0.1.1 Alpha</h3><br>
+- Game is renamed into Absolute Tree to prevent confusion. 
+<br><br>
 	<h3>v0.1 Alpha</h3><br>
 		- Release of the game.`
 

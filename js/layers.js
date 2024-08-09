@@ -94,6 +94,9 @@ addLayer("m", {
                 
               
                 let eff = player.m.points.plus(1).pow(0.3);
+
+                if (eff.gte(1e10)) eff = eff.div(1e10).log2().plus(1e10)
+
             if (hasUpgrade("m",23)) eff = eff.times(upgradeEffect("m",23))
          
                 return eff;
@@ -193,7 +196,7 @@ addLayer("m", {
         },
         23: {
             title: "Multi-multi Points",
-            description: "The upgrade above is boosted based on Multi Points.",
+            description: "<b>Multipoints</b> upgrade is stronger based on Multi Points.",
             cost: new Decimal(1e11),
            
             unlocked() {return hasUpgrade("m",22)},
@@ -268,4 +271,60 @@ addLayer("m", {
         
     },
 })
+/*
+addLayer("a", {
+    name: "absolute", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "A", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "red",
+    requires: new Decimal(1e15), // Can be a function that takes requirement increases into account
+    resource: "absolute points", // Name of prestige currency
+    baseResource: "points", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
+    base: 1.15,
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
 
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        let exp = new Decimal(1)
+       
+        return exp;
+    },
+
+    row: 0, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {
+            key:"a", description: "A: Reset for absolute points", onPress() {
+                if (canReset(this.layer))
+                    doReset(this.layer)
+            }
+        },
+    ],
+    layerShown(){return true},
+    tabFormat: {
+        "Main": {
+            buttonStyle() { return {'background-color': 'purple'} },
+            content: ["main-display",
+            "prestige-button",
+            "resource-display", "blank",
+           
+            "upgrades",
+           
+            "blank",
+        ]},
+        
+
+    
+    },
+    
+})
+
+*/
