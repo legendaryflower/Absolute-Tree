@@ -1,7 +1,7 @@
 let modInfo = {
-	name: "The ??? Tree",
-	id: "mymod",
-	author: "nobody",
+	name: "The Multi Tree",
+	id: "TheMultiTree",
+	author: "RTLF2024",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
@@ -13,14 +13,13 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "Literally nothing",
+	num: "0.1",
+	name: "Alpha",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		- Added things.<br>
-		- Added stuff.`
+	<h3>v0.1 Alpha</h3><br>
+		- Release of the game.`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -43,6 +42,11 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+	if (hasUpgrade("m",11)) gain = gain.times(2)
+	if (hasUpgrade("m",12)) gain = gain.times(upgradeEffect("m",12))
+	if (hasUpgrade("m",13)) gain = gain.times(upgradeEffect("m",13))
+	if (hasUpgrade("m",15)) gain = gain.times(upgradeEffect("m",15))
+	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
 	return gain
 }
 
@@ -51,12 +55,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [
+var displayThings = [`<span>Current Endgame: 1e14 Points</span>`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.points.gte(new Decimal("e280000000"))
+	return player.points.gte(new Decimal(1e14))
 }
 
 
