@@ -19,6 +19,7 @@ addLayer("m", {
         if (hasUpgrade("m",16)) mult = mult.times(upgradeEffect("m",16))
         if (hasUpgrade("m",17)) mult = mult.times(tmp.m.buyables[12].effect.first);
         if (hasUpgrade("m",21)) mult = mult.times(upgradeEffect("m",21))
+        if (hasChallenge("a",12)) mult = mult.times(challengeEffect("a",12))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -26,6 +27,7 @@ addLayer("m", {
         if (hasUpgrade("m",22)) exp = exp.add(upgradeEffect("m",22))
         return exp;
     },
+
     softcap: new Decimal(1e20),
     softcapPower: 0.333,
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -41,10 +43,14 @@ addLayer("m", {
         if (player.m.auto) {
           setBuyableAmount("m",11,tmp.m.buyables[11].canAfford?player.m.points.div(1).log(6).floor().add(1):getBuyableAmount("m",11))
           setBuyableAmount("m",12,tmp.m.buyables[12].canAfford?player.m.points.div(5).log(6).floor().add(1):getBuyableAmount("m",12))
-          setBuyableAmount("m",13,tmp.m.buyables[13].canAfford?player.m.points.div(100).log(14).floor().add(1):getBuyableAmount("m",13))
+          setBuyableAmount("m",13,tmp.m.buyables[13].canAfford?player.m.points.div(100).log(14).floor().add(1):getBuyableAmount("m",13)) 
         }
-        
+        if (player.m.auto2) {
+     
+            setBuyableAmount("m",14,tmp.m.buyables[14].canAfford?player.m.points.div(10000).log(28).floor().add(1):getBuyableAmount("m",14)) 
+          }
       },
+      passiveGeneration() { return (hasMilestone("a", 3))?1:0 },
     doReset(resettingLayer) {
         let keep = [];
     
@@ -89,51 +95,69 @@ addLayer("m", {
             title: "Pointy",
             description: "Points boost their own gain.",
             cost: new Decimal(1),
+            cap() { let cap = new Decimal(1e7)
+
+                return cap; },
+            
             effect() {
                 
               
-                let eff = player.points.plus(1).pow(0.1);
+                let eff = player.points.plus(1).pow(0.1).min(tmp.m.upgrades[this.id].cap);
 
-        
+         if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
                 return eff;
             },
             
-            effectDisplay() { return format(tmp.m.upgrades[12].effect)+"x" },
+            effectDisplay() { return format(tmp.m.upgrades[12].effect)+"x"+(tmp.m.upgrades[12].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
             unlocked() {return hasUpgrade("m",11)},
         },
         13: {
             title: "Multipoints",
             description: "Multi points multiply Points gain.",
             cost: new Decimal(10),
+            cap() { let cap = new Decimal(1e21)
+
+                return cap; },
+            
             effect() {
                 
                if (inChallenge("a",11)) return new Decimal(1)
-                let eff = player.m.points.plus(1).pow(0.3);
-
+          
+                let eff = player.m.points.plus(1).pow(0.3)
+                if (eff.gte(1e21)) return new Decimal(1e21)
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
                 if (eff.gte(1e10)) eff = eff.div(1e10).log2().plus(1e10)
                 if (eff.gte(1e13)) eff = eff.div(1e13).log10().plus(1e13)
+                if (eff.gte(1e16)) eff = eff.div(1e16).log10().plus(1e16)
+                if (eff.gte(1e20)) eff = eff.div(1e20).log10().log10().log10().plus(1e20)
+              
             if (hasUpgrade("m",23)) eff = eff.times(upgradeEffect("m",23))
          
                 return eff;
             },
             
-            effectDisplay() { return format(tmp.m.upgrades[13].effect)+"x" },
+            effectDisplay() { return format(tmp.m.upgrades[13].effect)+"x"+(tmp.m.upgrades[13].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
             unlocked() {return hasUpgrade("m",12)},
         },
         14: {
             title: "Pointy Multipler",
             description: "Points multiply Multi points gain.",
             cost: new Decimal(15),
+            cap() { let cap = new Decimal(5e7)
+
+	return cap; },
+
+
             effect() {
                 
               
-                let eff = player.points.plus(1).pow(0.125);
-
-        
+                let eff = player.points.plus(1).pow(0.125).min(tmp.m.upgrades[this.id].cap);
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
+           
                 return eff;
             },
             
-            effectDisplay() { return format(tmp.m.upgrades[14].effect)+"x" },
+            effectDisplay() { return format(tmp.m.upgrades[14].effect)+"x"+(tmp.m.upgrades[14].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
             unlocked() {return hasUpgrade("m",13)},
         },
         15: {
@@ -144,6 +168,7 @@ addLayer("m", {
                 
               
                 let eff = Decimal.pow(1.05, player.m.upgrades.length);
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
                 if (hasUpgrade("m",24)) eff = eff.times(upgradeEffect("m",24))
         
                 return eff;
@@ -160,6 +185,7 @@ addLayer("m", {
                 
               
                 let eff = Decimal.pow(1.035, player.m.upgrades.length);
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
                 if (hasUpgrade("m",24)) eff = eff.times(upgradeEffect("m",24))
         
                 return eff;
@@ -179,52 +205,61 @@ addLayer("m", {
             title: "Multy",
             description: "Multi points boost their own gain.",
             cost: new Decimal(1000),
-           
+            cap() { let cap = new Decimal(1e6)
+
+                return cap; },
             unlocked() {return hasUpgrade("m",17)},
             effect() {
                 
               
                 let eff = player.m.points.plus(1).pow(0.05);
-
+                if (eff.gte(1e6)) return new Decimal(1e6)
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
         
                 return eff;
             },
             
-            effectDisplay() { return format(tmp.m.upgrades[21].effect)+"x" },
+            effectDisplay() { return format(tmp.m.upgrades[21].effect)+"x"+(tmp.m.upgrades[21].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
         },
         22: {
             title: "Mulipotenint",
             description: "Multi Point's exponent is added based on Points",
             cost: new Decimal(1500),
-           
+            cap() { let cap = new Decimal(5)
+
+                return cap; },
             unlocked() {return hasUpgrade("m",21)},
             effect() {
                 
               
                 let eff = player.points.plus(0.005).pow(0.01);
-
-        
+                if (eff.gte(5)) return new Decimal(5)
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
                 return eff;
             },
             
-            effectDisplay() { return "+"+format(tmp.m.upgrades[22].effect) },
+            effectDisplay() { return "+"+format(tmp.m.upgrades[22].effect)+(tmp.m.upgrades[21].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
         },
         23: {
             title: "Multi-multi Points",
             description: "<b>Multipoints</b> upgrade is stronger based on Multi Points.",
             cost: new Decimal(1e11),
-           
+            cap() { let cap = new Decimal(1e6)
+
+                return cap; },
             unlocked() {return hasUpgrade("m",22)},
             effect() {
                 
               
                 let eff = player.m.points.plus(1).pow(0.1);
 
+                if (eff.gte(1e6)) return new Decimal(1e6)
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
         
                 return eff;
             },
             
-            effectDisplay() { return format(tmp.m.upgrades[23].effect)+"x" },
+            effectDisplay() { return format(tmp.m.upgrades[23].effect)+"x"+(tmp.m.upgrades[23].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
         },
         24: {
             title: "Self-upgrading",
@@ -237,7 +272,7 @@ addLayer("m", {
               
                 let eff = player.a.points.plus(1).pow(0.75);
 
-        
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
                 return eff;
             },
             
@@ -268,11 +303,83 @@ addLayer("m", {
               
                 let eff = player.m.points.plus(1).pow(0.215);
 
-        
+                if (eff.gte(1e110)) eff = eff.div(1e118).log10().plus(1e110)
+
+
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
+         if (hasChallenge("a",11)) eff = eff.times(5)
+         if (hasUpgrade("m",34)) eff = eff.pow(2)
                 return eff;
             },
             
             effectDisplay() { return "/"+format(tmp.m.upgrades[27].effect) },
+        },
+        31: {
+            title: "Panda-Cola Biscuits",
+            description: "Absolute's effect base is added by your Multi Points (at a reduced rate)",
+            cost: new Decimal(2.5e33),
+           
+            unlocked() {return hasUpgrade("m",27)&&hasChallenge("a",11)},
+            effect() {
+                
+              
+                let eff = player.m.points.add(1).log10().sqrt().div(15).times(1);
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
+        
+                return eff;
+            },
+            
+            effectDisplay() { return "+"+format(tmp.m.upgrades[31].effect) },
+        },
+        32: {
+            title: "Multiverse Drift",
+            description: "Reduce the cost of Points buyable by 31.5%.",
+            cost: new Decimal(5e34),
+           
+            unlocked() {return hasUpgrade("m",31)},
+           
+        },
+        33: {
+            title: "Eucild Points",
+            description: "Points gain is raised ^1.2.",
+            cost: new Decimal(1e35),
+           
+            unlocked() {return hasUpgrade("m",32)},
+           
+        },
+        
+        34: {
+            title: "Tampered Powers",
+            description: "<b>Absolute Divider</b>'s upgrade is squared.",
+            cost: new Decimal(1e44),
+           
+            unlocked() {return hasUpgrade("m",33)},
+           
+        },
+        35: {
+            title: "Spactical Multi",
+            description: "Multiply the base effect of Absolute by 4.",
+            cost: new Decimal(5e45),
+           
+            unlocked() {return player.a.points.gte(6)||hasUpgrade("m",35)&&hasUpgrade("m",34)},
+           
+        },
+        36: {
+            title: "Impossible Duke",
+            description: "Absolute divides its own requirement.",
+            cost: new Decimal(1e80),
+           
+            unlocked() {return player.a.points.gte(7)||hasUpgrade("m",36)&&hasUpgrade("m",35)},
+            effect() {
+                
+              
+                let eff = player.a.points.plus(1).pow(0.085);
+
+        
+                return eff;
+            },
+            
+            effectDisplay() { return "/"+format(tmp.m.upgrades[36].effect) },
         },
     },
     buyables: {
@@ -280,7 +387,7 @@ addLayer("m", {
             freeLvls() {let free = new Decimal(0)
             if (player.a.unlocked) free = free.plus(buyableEffect("m",13))
             return free;},
-            cost(x) { return new Decimal(1).mul(new Decimal(6).pow(x)) },
+            cost(x) { return new Decimal(1).mul(new Decimal(6).pow(x)).times(hasUpgrade("m",32) ? 0.695 : 1) },
             title() { return "Points" },
 
             display() { // Everything else displayed in the buyable button after the title
@@ -413,6 +520,7 @@ addLayer("a", {
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
      if (hasUpgrade("m",27)) mult = mult.div(upgradeEffect("m",27))
+     if (hasUpgrade("m",36)) mult = mult.div(upgradeEffect("m",36))
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -437,6 +545,7 @@ addLayer("a", {
     addToBase() {
         let base = new Decimal(0);
      if (hasUpgrade("m",25)) base = base.add(0.05)
+     if (hasUpgrade("m",31)) base = base.add(upgradeEffect("m",31))
         return base;
     },
   
@@ -447,14 +556,19 @@ addLayer("a", {
         base = base.plus(tmp.a.addToBase);
         
         // MULTIPLY
-     
+      
         
         return base.pow(tmp.a.power);
     },
     power() {
         let power = new Decimal(1);
-    
+     if (hasUpgrade("m",35)) power = power.times(4)
         return power;
+    },
+    upgradeNerfChallenge(x=challengeCompletions("a", 12)) {
+      
+        let nerf = Decimal.add(2.5, Decimal.pow(x, 1.5).div(7))
+        return nerf;
     },
     effect() {
         return Decimal.pow(tmp.a.effectBase, player.a.points.plus()).max(1).times(1);
@@ -502,10 +616,55 @@ player.m.best = new Decimal(0),
 player.m.total = new Decimal(0),
 player.m.upgrades = []
             },
-            rewardDescription: "Complete the game.",
-            /* <b>Absolute Divider</b> is 5 times as efficient, and unlock a row of Multi Upgrades. */ // PLANNED IN v0.2.1
+            rewardDescription: "<b>Absolute Divider</b> is 5 times as efficient, and unlock a row of Multi Upgrades.",
+         
+        },
+        12: {
+            name: "Antitrusted Multiverse",
+           challengeDescription() {
+            return "All Multi Upgrades with effects are divided by " +format(tmp.a.upgradeNerfChallenge)+"."
+            + "<br>"+challengeCompletions(this.layer, this.id)+""
+             + " completions";
+        },
+            currencyDisplayName: "points",
+            currencyInternalName: "points",
+            
+            scalePower() {
+                let power = new Decimal(1);
+                
+                return power;
+            },
+            completionLimit() { 
+                let lim = Infinity;
+                
+                return lim;
+            },
+goal() {
+                let comps = Decimal.mul(challengeCompletions("a", 12), tmp.a.challenges[this.id].scalePower);
+                if (comps.gte(5)) comps = comps.sub(0.95);
+                if (comps.gte(7)) comps = comps.times(2);
+                return Decimal.pow(400, Decimal.pow(comps, 3)).times(1e7);
+            },
+
+            rewardEffect() { 
+                let eff = Decimal.pow(1.35, Decimal.pow(challengeCompletions("a", 12), 2));
+                if (!eff.eq(eff)) eff = new Decimal(1);
+                return eff;
+            },
+            rewardDisplay() { return format(tmp.a.challenges[12].rewardEffect)+"x to Multi Points gain." },
+       
+            onEnter() {
+player.points = new Decimal(0),
+player.m.points = new Decimal(0),
+player.m.best = new Decimal(0),
+player.m.total = new Decimal(0),
+player.m.upgrades = []
+            },
+            rewardDescription: "Concurrent multiplier to Multi points gain.",
+          unlocked() { return player.a.points.gte(6)}
         },
     },
+
     milestones: {
         0: {
             requirementDescription: "2 Absolute Points",
@@ -526,6 +685,22 @@ player.m.upgrades = []
             effectDescription: "Unlock Challenges.",
             done() { return player.a.points.gte(5) },
           
+
+        },
+        3: {
+            requirementDescription: "8 Absolute Points",
+            effectDescription: "Gain 100% of Multi Points per second.",
+            done() { return player.a.points.gte(8) },
+          
+
+        },
+        4: {
+            requirementDescription: "10 Absolute Points",
+            effectDescription: "Automate the next 1 Multi Buyable.",
+            done() { return player.a.points.gte(10) },
+            toggles: [
+                ["m","auto2"],
+              ]
 
         }
        

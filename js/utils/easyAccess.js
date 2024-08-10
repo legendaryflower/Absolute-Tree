@@ -58,6 +58,7 @@ function challengeEffect(layer, id) {
 	return (tmp[layer].challenges[id].rewardEffect)
 }
 
+
 function buyableEffect(layer, id) {
 	return (tmp[layer].buyables[id].effect)
 }

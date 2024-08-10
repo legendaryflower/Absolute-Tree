@@ -13,17 +13,23 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2",
+	num: "0.2.1",
 	name: "Alpha",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+<h3>v0.2.1 Alpha</h3><br>
+- Added more upgrades<br>
+- Changed the Lucky Chancemakers reward. <br>
+- Added a repeatable Absolute Challenge. <br>
+- Added 2 more Absolute Milestones. <br>
+<br>
 <h3>v0.2 Alpha</h3><br>
 - Added a new layer.<br>
 - Added 4 new Multi Upgrades.<br>
 - Added 2 new Multi Buyables.<br>
 - Balanced up to a Lucky Chancemakers completion.<br>
-<br><br>
+<br>
 <h3>v0.1.1 Alpha</h3><br>
 - Game is renamed into Absolute Tree to prevent confusion. 
 <br><br>
@@ -55,6 +61,7 @@ function getPointGen() {
 	if (hasUpgrade("m",12)) gain = gain.times(upgradeEffect("m",12))
 	if (hasUpgrade("m",13)) gain = gain.times(upgradeEffect("m",13))
 	if (hasUpgrade("m",15)) gain = gain.times(upgradeEffect("m",15))
+	if (hasUpgrade("m",33)) gain = gain.pow(1.2)
 	if (player.a.unlocked) gain = gain.times(tmp.a.effect)
 	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
 	return gain
@@ -65,12 +72,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: Have <b>Lucky Chancemakers</b> completed.</span>`,
+var displayThings = [`<span>Current Endgame: 1e285 Multi Points.`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return hasChallenge("a",11)
+	return player.m.points.gte(1e285)
 }
 
 
