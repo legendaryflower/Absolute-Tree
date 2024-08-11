@@ -26,6 +26,13 @@ let changelog = `<h1>Changelog:</h1><br>
 - Added Ultra Points.<br>
 - Balanced up to 1e1,045 Multi Points.<br>
 <br>
+<h3>v0.2.1 Alpha</h3><br>
+- Added more upgrades<br>
+- Changed the Lucky Chancemakers reward. <br>
+- Added a repeatable Absolute Challenge. <br>
+- Added 2 more Absolute Milestones. <br>
+- Balanced up to 1e285 Multi Points. <br>
+<br>
 <h3>v0.2 Alpha</h3><br>
 - Added a new layer.<br>
 - Added 4 new Multi Upgrades.<br>
