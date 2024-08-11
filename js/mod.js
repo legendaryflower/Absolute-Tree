@@ -13,16 +13,18 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2.1",
+	num: "0.2.2",
 	name: "Alpha",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
-<h3>v0.2.1 Alpha</h3><br>
-- Added more upgrades<br>
-- Changed the Lucky Chancemakers reward. <br>
-- Added a repeatable Absolute Challenge. <br>
-- Added 2 more Absolute Milestones. <br>
+<h3>v0.2.2 Alpha</h3><br>
+- Fixed a typo in upgrade name "Multipotenint".<br>
+- Added Absolute Buyables.<br>
+- Added Absolute Upgrades.<br>
+- Added 3 more Absolute Challenges.<br>
+- Added Ultra Points.<br>
+- Balanced up to 1e1,045 Multi Points.<br>
 <br>
 <h3>v0.2 Alpha</h3><br>
 - Added a new layer.<br>
@@ -61,9 +63,12 @@ function getPointGen() {
 	if (hasUpgrade("m",12)) gain = gain.times(upgradeEffect("m",12))
 	if (hasUpgrade("m",13)) gain = gain.times(upgradeEffect("m",13))
 	if (hasUpgrade("m",15)) gain = gain.times(upgradeEffect("m",15))
+	if (hasUpgrade("a",12)) gain = gain.times(upgradeEffect("a",12))
 	if (hasUpgrade("m",33)) gain = gain.pow(1.2)
+	if (inChallenge("a",21)) gain = gain.root(1e27)
 	if (player.a.unlocked) gain = gain.times(tmp.a.effect)
 	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
+	if (hasUpgrade("a",21)) gain = gain.times(tmp.a.buyables[12].effect.first);
 	return gain
 }
 
@@ -72,12 +77,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 1e285 Multi Points.`,
+var displayThings = [`<span>Current Endgame: 1e1,045 Multi Points.`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.m.points.gte(1e285)
+	return player.m.points.gte("1e1045")
 }
 
 
