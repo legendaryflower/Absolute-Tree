@@ -395,6 +395,7 @@ addLayer("m", {
         11: {
             costScaling() {let cost =  new Decimal(1)
                 if (player.m.buyables[11].gte(1100)) cost = cost.add(0.25)
+                if (player.m.buyables[11].gte(1200)) cost = cost.add(0.75)
                 if (inChallenge("a",22)) cost = cost.times(tmp.a.costScalingStartHarsh)
         return cost;
                  },
@@ -433,6 +434,7 @@ addLayer("m", {
                 return free;},
                 costScaling() {let cost =  new Decimal(1)
                     if (player.m.buyables[12].gte(1100)) cost = cost.add(0.25)
+                    if (player.m.buyables[11].gte(1200)) cost = cost.add(0.75)
                     if (inChallenge("a",22)) cost = cost.times(tmp.a.costScalingStartHarsh)
             return cost;
                      },
@@ -463,7 +465,13 @@ addLayer("m", {
 
         },
         13: {
-            cost(x) { return new Decimal(100).mul(new Decimal(14).pow(x)) },
+            costScaling() {let cost =  new Decimal(1)
+              
+                if (player.m.buyables[11].gte(1200)) cost = cost.add(0.75)
+ 
+        return cost;
+                 },
+            cost(x) { return new Decimal(100).mul(new Decimal(14).pow(x)).pow(tmp[this.layer].buyables[this.id].costScaling) },
             title() { return "Free Points" },
 
             display() { // Everything else displayed in the buyable button after the title
@@ -490,7 +498,13 @@ addLayer("m", {
          
         },
         14: {
-            cost(x) { return new Decimal(10000).mul(new Decimal(28).pow(x)) },
+            costScaling() {let cost =  new Decimal(1)
+              
+                if (player.m.buyables[11].gte(1200)) cost = cost.add(0.75)
+ 
+        return cost;
+                 },
+            cost(x) { return new Decimal(10000).mul(new Decimal(28).pow(x)).pow(tmp[this.layer].buyables[this.id].costScaling) },
             title() { return "Free Multi Points" },
 
             display() { // Everything else displayed in the buyable button after the title
@@ -653,6 +667,7 @@ addLayer("a", {
         if (player.a.buyables[11].gte(8)) cost = cost.add(1)
         if (player.a.buyables[11].gte(9)) cost = cost.add(0.15)
         if (player.a.buyables[11].gte(10)) cost = cost.add(0.95)
+        if (player.a.buyables[11].gte(16)) cost = cost.add(4)
         if (hasUpgrade("a",13)) cost = cost.times(0.75)
         if (hasChallenge("a",21)) cost = cost.times(0.6666)
 return cost;
@@ -690,6 +705,7 @@ return cost;
           if (player.a.buyables[12].gte(8)) cost = cost.add(1)
           if (player.a.buyables[12].gte(9)) cost = cost.add(0.15)
           if (player.a.buyables[12].gte(10)) cost = cost.add(0.95)
+          if (player.a.buyables[this.id].gte(9)) cost = cost.add(3.5)
 
   return cost;
            },
@@ -722,11 +738,11 @@ return cost;
           13: {
             costScaling() {let cost =  new Decimal(1)
           
-          if (player.a.buyables[13].gte(6)) cost = cost.add(0.25)
+          if (player.a.buyables[13].gte(4)) cost = cost.add(0.5)
           if (player.a.buyables[13].gte(8)) cost = cost.add(1)
           if (player.a.buyables[13].gte(9)) cost = cost.add(0.15)
           if (player.a.buyables[13].gte(10)) cost = cost.add(0.95)
-
+          if (player.a.buyables[this.id].gte(6)) cost = cost.add(3.8)
   return cost;
            },
               cost(x) { return new Decimal("1e975").mul(new Decimal(1e50).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
@@ -753,6 +769,104 @@ return cost;
                   setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
               },
               unlocked() { return hasUpgrade("a",25)}
+             
+          },
+          21: {
+            costScaling() {let cost =  new Decimal(1)
+                if (player.a.buyables[this.id].gte(4)) cost = cost.add(0.05)
+                if (player.a.buyables[this.id].gte(7)) cost = cost.add(2)
+                if (player.a.buyables[this.id].gte(10)) cost = cost.add(4.3)
+                if (player.a.buyables[this.id].gte(12)) cost = cost.add(15)
+  return cost;
+           },
+              cost(x) { return new Decimal("1e1131").pow(new Decimal(1.0015).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              title() { return "Squid Buyable 1" },
+  
+              display() { // Everything else displayed in the buyable button after the title
+                  let data = tmp[this.layer].buyables[this.id]
+                  return "Cost: " + format(data.cost) + " multi points\n\
+                  Amount: " + player[this.layer].buyables[this.id] + "\n\
+                 All upgrades of Chocoroot upgrade type is multiplied by " + format(data.effect.first) + "x. "
+              },
+              effect(x) { // Effects of owning x of the items, x is a decimal
+                  let eff = {}
+                  if (x.gte(0)) eff.first = Decimal.pow(1.45, x.pow(1.3))
+                  else eff.first = Decimal.pow(1/45, x.times(-1).pow(1.0))
+              
+                  if (x.gte(0)) eff.second = x.pow(0.8)
+                  else eff.second = x.times(-1).pow(0.8).times(-1)
+                  return eff;
+              },
+              canAfford() { return player.m.points.gte(this.cost()) },
+              buy() {
+                  player.m.points = player.m.points.sub(this.cost())
+                  setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+              },
+              unlocked() { return hasUpgrade("a",32)}
+             
+          },
+          22: {
+            costScaling() {let cost =  new Decimal(1)
+             
+
+  return cost;
+           },
+              cost(x) { return new Decimal("1e300").pow(new Decimal(2).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              title() { return "Squid Buyable 2" },
+  
+              display() { // Everything else displayed in the buyable button after the title
+                  let data = tmp[this.layer].buyables[this.id]
+                  return "Cost: " + format(data.cost) + " points\n\
+                  Amount: " + player[this.layer].buyables[this.id] + "\n\
+                 Golden Clover upgrade is multiplied by " + format(data.effect.first) + "x. "
+              },
+              effect(x) { // Effects of owning x of the items, x is a decimal
+                  let eff = {}
+                  if (x.gte(0)) eff.first = Decimal.pow(1.03, x.pow(1.08))
+                  else eff.first = Decimal.pow(1/45, x.times(-1).pow(1.0))
+              
+                  if (x.gte(0)) eff.second = x.pow(0.8)
+                  else eff.second = x.times(-1).pow(0.8).times(-1)
+                  return eff;
+              },
+              canAfford() { return player.points.gte(this.cost()) },
+              buy() {
+                  player.m.points = player.points.sub(this.cost())
+                  setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+              },
+              unlocked() { return hasUpgrade("a",32)}
+             
+          },
+          23: {
+            costScaling() {let cost =  new Decimal(1)
+             
+
+  return cost;
+           },
+              cost(x) { return new Decimal("1e500").pow(new Decimal(2.5).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              title() { return "Squid Buyable 3" },
+  
+              display() { // Everything else displayed in the buyable button after the title
+                  let data = tmp[this.layer].buyables[this.id]
+                  return "Cost: " + format(data.cost) + " points\n\
+                  Amount: " + player[this.layer].buyables[this.id] + "\n\
+                 Multiply the rewards of Anti-Queen challenge by " + format(data.effect.first) + "x. "
+              },
+              effect(x) { // Effects of owning x of the items, x is a decimal
+                  let eff = {}
+                  if (x.gte(0)) eff.first = Decimal.pow(1.4, x.pow(1.3))
+                  else eff.first = Decimal.pow(1/45, x.times(-1).pow(1.0))
+              
+                  if (x.gte(0)) eff.second = x.pow(0.8)
+                  else eff.second = x.times(-1).pow(0.8).times(-1)
+                  return eff;
+              },
+              canAfford() { return player.points.gte(this.cost()) },
+              buy() {
+                  player.m.points = player.points.sub(this.cost())
+                  setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+              },
+              unlocked() { return hasUpgrade("a",32)}
              
           },
         
@@ -837,7 +951,7 @@ effect() {
                 
               
     let eff = player.points.add(1).log10().sqrt().div(25).times(1);
-
+	if (hasUpgrade("a",32)) eff = eff.times(tmp.a.buyables[22].effect.first);
     return eff;
 },
 
@@ -886,7 +1000,7 @@ effect() {
                 
               
     let eff = player.m.points.add(1).log10().sqrt().div(1.8).times(1);
-
+	if (hasUpgrade("a",32)) eff = eff.times(tmp.a.buyables[21].effect.first);
     return eff;
 }, 
 
@@ -899,14 +1013,14 @@ effectDisplay() { return "+"+format(tmp.a.upgrades[23].effect) },
             description: "Absolute's effect also adds to the Ultra Point's base effect.",
             cost: new Decimal("1e907"),
          unlocked () {return hasUpgrade("a",23)},
-currencyDisplayName: "multipoints",
+currencyDisplayName: "multi points",
 currencyInternalName: "points",
 currencyLayer: "m",
 effect() {
                 
               
     let eff = tmp.a.effect.plus(1).pow(0.09117)
-
+	if (hasUpgrade("a",32)) eff = eff.times(tmp.a.buyables[21].effect.first);
     return eff;
 },
 
@@ -919,21 +1033,79 @@ effectDisplay() { return "+"+format(tmp.a.upgrades[24].effect) },
             description: "Unlock a new Buyable.",
             cost: new Decimal("1e975"),
          unlocked () {return hasUpgrade("a",24)},
-currencyDisplayName: "multipoints",
+currencyDisplayName: "multi points",
 currencyInternalName: "points",
 currencyLayer: "m",
             
         },	
         26: {
-            title: "Brown Mildew",
+            title: "Brown Mold",
             description: "Unlock a new challenge.",
             cost: new Decimal("1e976"),
          unlocked () {return hasUpgrade("a",25)},
-currencyDisplayName: "multipoints",
+currencyDisplayName: "multi points",
 currencyInternalName: "points",
 currencyLayer: "m",
             
+        },
+        27: {
+            title: "Meddleweed",
+            description: "Subtract the goal of Anti-Queens and Antitrusted Multiverse based on points.",
+            cost: new Decimal("1e1045"),
+         unlocked () {return hasUpgrade("a",26)},
+currencyDisplayName: "multi points",
+currencyInternalName: "points",
+currencyLayer: "m",
+effect() {
+                
+              
+    let eff = player.points.add(1).log10().sqrt().div(25).times(1);
+    return eff;
+},
+
+
+effectDisplay() { return "-"+format(tmp.a.upgrades[27].effect) },
         },	
+        31: {
+            title: "Whiskerbloom",
+            description: "Raise the Points gain based on Ultra Points.",
+            cost: new Decimal("1e1117"),
+         unlocked () {return hasUpgrade("a",27)},
+currencyDisplayName: "multi points",
+currencyInternalName: "points",
+currencyLayer: "m",
+effect() {
+                
+              
+    let eff = player.u.points.plus(1).pow(0.03)
+    return eff;
+},
+
+
+effectDisplay() { return "^"+format(tmp.a.upgrades[31].effect) },
+        },	
+        32: {
+            title: "Chimerose",
+            description: "Unlock Squid Buyables.",
+            cost: new Decimal("1e1131"),
+         unlocked () {return hasUpgrade("a",31)},
+currencyDisplayName: "multi points",
+currencyInternalName: "points",
+currencyLayer: "m",
+
+        },	   
+
+        /*
+        33: {
+            title: "Nursetulip",
+            description: "Unlock Nurses (layer).",
+            cost: new Decimal("1e20000"),
+         unlocked () {return hasUpgrade("a",32)},
+currencyDisplayName: "multi points",
+currencyInternalName: "points",
+currencyLayer: "m",
+
+        },	 */
     },
     challenges: {
         11: {
@@ -984,7 +1156,10 @@ goal() {
                 let comps = Decimal.mul(challengeCompletions("a", 12), tmp.a.challenges[this.id].scalePower);
                 if (comps.gte(5)) comps = comps.times(1.1);
                 if (comps.gte(7)) comps = comps.times(1.2);
+                if (comps.gte(9)) comps = comps.times(1.2);
+                if (comps.gte(10)) comps = comps.times(1.5);
                 if (hasUpgrade("a",22)) comps = comps.times(0.2);
+                if (hasUpgrade("a",27)) comps = comps.sub(upgradeEffect("a",27))
                 return Decimal.pow(400, Decimal.pow(comps, 3)).times(1e7);
             },
 
@@ -1059,6 +1234,7 @@ goal() {
                 let comps = Decimal.mul(challengeCompletions("a", 22), tmp.a.challenges[this.id].scalePower);
                 if (comps.gte(5)) comps = comps.sub(2.5);
                 if (comps.gte(7)) comps = comps.times(2);
+                if (hasUpgrade("a",27)) comps = comps.sub(upgradeEffect("a",27))
                 return Decimal.pow(1e24, Decimal.pow(comps, 3)).times(1e250);
             },
 

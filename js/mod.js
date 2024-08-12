@@ -13,11 +13,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2.2",
+	num: "0.2.3",
 	name: "Alpha",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+<h3>v0.2.3 Alpha</h3><br>
+- Added 3 more Absolute Buyables.<br>
+- Added 3 more Absolute Upgrades.<br>
+- Balanced up to 1e1,429 Multi Points.<br>
+<br>
 <h3>v0.2.2 Alpha</h3><br>
 - Fixed a typo in upgrade name "Multipotenint".<br>
 - Added Absolute Buyables.<br>
@@ -76,6 +81,7 @@ function getPointGen() {
 	if (player.a.unlocked) gain = gain.times(tmp.a.effect)
 	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
 	if (hasUpgrade("a",21)) gain = gain.times(tmp.a.buyables[12].effect.first);
+	if (hasUpgrade("a",31)) gain = gain.pow(upgradeEffect("a",31))
 	return gain
 }
 
@@ -84,12 +90,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 1e1,045 Multi Points.`,
+var displayThings = [`<span>Current Endgame: 1e1,429 Multi Points.`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.m.points.gte("1e1045")
+	return player.m.points.gte("1e1429")
 }
 
 
