@@ -13,11 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2.3",
+	num: "0.2.4",
 	name: "Alpha",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+<br>
+<font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v0.2.4 Alpha</h3><br>
+- Added Nurses.<br>
+- Added 1 new Multi Upgrade.<br>
+- Added 7 new Absolute Upgrades.<br>
+- Added 1 new Absolute Buyables.<br>
+- Added 1 more Absolute Challenge.<br>
+- Balanced early game mechanics.<br>
+- Balanced up to 1 Absol Perpetual.<br>
+<br>
 <h3>v0.2.3 Alpha</h3><br>
 - Added 3 more Absolute Buyables.<br>
 - Added 3 more Absolute Upgrades.<br>
@@ -82,6 +93,12 @@ function getPointGen() {
 	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
 	if (hasUpgrade("a",21)) gain = gain.times(tmp.a.buyables[12].effect.first);
 	if (hasUpgrade("a",31)) gain = gain.pow(upgradeEffect("a",31))
+
+	if (player.n.unlocked) gain = gain.times(tmp.n.buyables[11].effect.first);
+	if (hasUpgrade("n",11)) gain = gain.times(upgradeEffect("n",11));
+    if (getClickableState('n', 12)) gain = gain.pow(1.2)
+	if (inChallenge("a",32)) gain = gain.pow(0.08)
+	if (hasUpgrade("a",36)) gain = gain.pow(tmp.n.buyables[12].effect.first);
 	return gain
 }
 
@@ -90,12 +107,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 1e1,429 Multi Points.`,
+var displayThings = [`<span>Current Endgame: 1 Absol Perpetual`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.m.points.gte("1e1429")
+	return player.n.absolPer.gte(1)
 }
 
 
