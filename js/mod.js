@@ -13,13 +13,25 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2.4",
-	name: "Alpha",
+	num: "0.3",
+	name: "Beta",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v0.3 Beta</h3><br>
+- Font changed into Nova Mono.<br>
+- Added a hotkey to reset for Ultra Points.<br>
+- Balanced up to Ichorpuff upgrade purchased.<br>
+- Added 2 more Absolute Upgrades.<br>
+- Completed the Absol Perpetuals mechanic.<br>
+- Added Umvuthi, the Sunbird (Mowzie Mob's reference).<br>
+- Added 10 new Nursery Upgrades.<br>
+- Added 5 new Nursery Buyables.<br>
+- Added a joke tree. Try to figure out where it is.<br>
+- Added a new layer.<br>
+<br>
 <h3>v0.2.4 Alpha</h3><br>
 - Added Nurses.<br>
 - Added 1 new Multi Upgrade.<br>
@@ -82,6 +94,7 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+
 	if (hasUpgrade("m",11)) gain = gain.times(2)
 	if (hasUpgrade("m",12)) gain = gain.times(upgradeEffect("m",12))
 	if (hasUpgrade("m",13)) gain = gain.times(upgradeEffect("m",13))
@@ -99,6 +112,10 @@ function getPointGen() {
     if (getClickableState('n', 12)) gain = gain.pow(1.2)
 	if (inChallenge("a",32)) gain = gain.pow(0.08)
 	if (hasUpgrade("a",36)) gain = gain.pow(tmp.n.buyables[12].effect.first);
+	if (hasUpgrade("n",16)) gain = gain.times(upgradeEffect("n",16));
+	if (hasUpgrade("n",23)) gain = gain.times(upgradeEffect("n",23));
+	if (player.s.unlocked) gain = gain.times(tmp.s.effect)
+	if (hasUpgrade("s",15)) gain = gain.times(upgradeEffect("s",15))
 	return gain
 }
 
@@ -107,12 +124,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 1 Absol Perpetual`,
+var displayThings = [`<span>Current Endgame: Getting the Ichorpuff upgrade.`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.n.absolPer.gte(1)
+	return hasUpgrade("a",22)
 }
 
 
