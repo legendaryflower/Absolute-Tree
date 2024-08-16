@@ -34,6 +34,8 @@ addLayer("m", {
         if (hasUpgrade("a",44)) mult = mult.times(upgradeEffect("a",44))
         if (player.s.unlocked) mult = mult.times(tmp.s.effect)
         if (hasUpgrade("s",13)) mult = mult.times(upgradeEffect("s",13))
+        if (hasUpgrade("s",24)) mult = mult.times(upgradeEffect("s",24))
+        if (hasMilestone("sm",0)) mult = mult.pow(0.8)
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -2762,6 +2764,94 @@ const textParticle = {
     offset: 30,
     fadeInTime: 1,
 }
+addLayer("sm", {
+    name: "smack points", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "SM", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+      
+    }},
+    color: "navy",
+ row: 3,
+  branches:["s"],
+  tooltip() { // Optional, tooltip displays when the layer is locked
+    return ("Current Smackery Level: "+formatWhole(player.sm.points))
+},
+
+	tabFormat: [
+        ["display-text", () => "Your current Smackery Level is  <h1 style='color: navy; text-shadow: navy 0px 0px 10px;'>" + formatWhole(player.sm.points) + "</h1>, which translates to these milestones below:" ],
+         "clickables",
+			"blank",
+		
+                   
+			"blank",
+	
+			"blank",
+			"milestones",],
+    clickables:{
+        11: {
+            gain() {
+            let gain = new Decimal(1)
+
+            return gain;
+            },
+            
+           
+            display() {
+                let dis = "Smack all of your progression to advance the next level of your Smackery Levels."
+            
+           
+                return dis
+            },
+            canClick() {
+                let click = player.s.durationFox.gte(Number.MAX_VALUE)
+                if (hasMilestone("sm",0)) return false
+                /*        if (hasMilestione("sm",0)) return new Decimal(86400)*/
+                return click;
+            },
+            onClick() {
+
+              player.sm.points = player.sm.points.add(1)
+              player.m.upgrades = []
+              for (var a = 11; a <= 99; a++) setBuyableAmount("m", a, new Decimal(0))
+              player.points = new Decimal(0)
+              player.m.points = new Decimal(0)
+             player.s.upgrades = []
+             for (var a = 11; a <= 99; a++) setBuyableAmount("s", a, new Decimal(0))
+                player.s.points = new Decimal(0)
+                player.s.best = new Decimal(0)
+                player.s.total = new Decimal(0)
+                player.s.therapyS = new Decimal(0)
+                player.s.durationFox = new Decimal(0)
+                player.s.axisX = new Decimal(0)
+                player.s.axisY = new Decimal(0)
+                player.s.axisZ = new Decimal(0)
+                player.s.makeraxisX = new Decimal(0)
+                player.s.makeraxisY = new Decimal(0)
+                player.s.makeraxisZ = new Decimal(0)
+                },
+                style: {'height':'130px', 'width':'175px', 'font-size':'13px',
+               
+            
+            },
+            
+            },
+    },
+    milestones: {
+         
+        0: {requirementDescription: "1 Smackery Points",
+        done() {return player[this.layer].points.gte(1)}, // Used to determine when to give the milestone
+        effectDescription: "<br><h3>Progression is altered.</h3><br><br>Multi points gain is ^0.8.<br>Points gain is ^1.05.<br>Sessions gain is ^0.8.<br>Prior to 1 Human Generation duration of Fox Music, multi raised ^1.2, but ^0.8 after reaching.<br>Session gain softcap starts +20 earlier.<br>All Fox upgrades that raise the multi of Fox duration is ^0.6.",
+        unlocked() {return player.sm.points.gte(1)},
+       },
+     
+      
+    },
+  
+ layerShown() {return player.s.durationFox.gte(Number.MAX_VALUE)||player.sm.points.gte(1)}
+})
 addLayer("s", {
     name: "sessions", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "S", // This appears on the layer's node. Default is the id with the first letter capitalized
@@ -2771,6 +2861,15 @@ addLayer("s", {
 		points: new Decimal(0),
         best: new Decimal(0),
         total: new Decimal(0),
+        therapyS: new Decimal(0),
+        axisX: new Decimal(0),
+        makeraxisX: new Decimal(0),
+        axisY: new Decimal(0),
+        makeraxisY: new Decimal(0),
+        axisZ: new Decimal(0),
+        makeraxisZ: new Decimal(0),
+        productofAxis: new Decimal(0),
+        durationFox: new Decimal(0),
     }},
     color: "indigo",
     requires() { let req = new Decimal("1e5350") 
@@ -2789,25 +2888,129 @@ return req;}, // Can be a function that takes requirement increases into account
 
  if (hasUpgrade("s",12)) mult = mult.times(upgradeEffect("s",12))
  if (hasUpgrade("s",17)) mult = mult.times(upgradeEffect("s",17))
+ if (hasUpgrade("s",23)) mult = mult.times(tmp.s.theraEffect)
+ if (hasUpgrade("s",35)) mult = mult.times(upgradeEffect("s",35))
+ if (hasUpgrade("s",46)) mult = mult.times(upgradeEffect("s",46))
+ if (hasMilestone("sm",0)) mult = mult.pow(0.8)
         return mult
     },
-    softcap() {return new Decimal(100)},
-    softcapPower: 0.2,
+    softcap() {let cap = new Decimal(100)
+        if (hasMilestone("sm",0)) cap = cap.min(20)
+    if (hasUpgrade("s",25)) cap = cap.plus(upgradeEffect("s",25))
+    if (hasUpgrade("s",37)) cap = cap.plus(upgradeEffect("s",37))
+    if (hasUpgrade("s",45)) cap = cap.plus(250)
+        return cap;},
+    softcapPower() {let pow = new Decimal(0.2)
+        if (hasUpgrade("s",22)) pow = pow.add(0.05)
+return pow;
+    },
+    passiveGeneration() { return (hasUpgrade("s", 31))?1:0 },
     tabFormat: {
         "Main": {
             buttonStyle() { return {'background-color': 'indigo'} },
             content: ["main-display",
             "prestige-button",
             "resource-display",
-            ["display-text", () => "NOTE: Once resetting for first time, you will lose access to Ultra, Absolute and Nursery Points." ],
-            "milestones",
+            ["display-text", () => "NOTE: Once resetting for first time, you will lose access to Ultra, Absolute and Nursery Points. Free Multi Points won't also work." ],
            
             "blank",
-            "upgrades",
+            ["row", [["upgrade", 11],["upgrade", 12],["upgrade", 13],["upgrade", 14],["upgrade", 15],["upgrade", 16],["upgrade", 17]]],
+            ["row", [["upgrade", 21],["upgrade", 22],["upgrade", 23],["upgrade", 24],["upgrade", 25],["upgrade", 26],["upgrade", 27]]],
+            ["row", [["upgrade", 31],["upgrade", 32],["upgrade", 33],["upgrade", 34],["upgrade", 35],["upgrade", 36],["upgrade", 37]]],
+            ["row", [["upgrade", 41],["upgrade", 42],["upgrade", 43],["upgrade", 44],["upgrade", 45],["upgrade", 46],["upgrade", 47]]],
+            ["row", [["upgrade", 51],["upgrade", 52],["upgrade", 53],["upgrade", 54],["upgrade", 55],["upgrade", 56],["upgrade", 57]]],
+            ["row", [["upgrade", 61],["upgrade", 62],["upgrade", 63],["upgrade", 64],["upgrade", 65],["upgrade", 66],["upgrade", 67]]],
+            ["row", [["upgrade", 71],["upgrade", 72],["upgrade", 73],["upgrade", 74],["upgrade", 75],["upgrade", 76],["upgrade", 77]]],
         ]},
-  
+        "Therapy": {
+            unlocked() {return hasUpgrade("s",23)},
+            content: [
+                "main-display",
+                    "prestige-button",
+                    "resource-display",
+                    ["microtabs", "stuff"]
+                 
+       
+        ]},
+        "Music": {
+            buttonStyle() { return {'border-color': 'orange'} },
+            unlocked() {return hasUpgrade("s",57)},
+            content: [
+                "main-display",
+                    "prestige-button",
+                    "resource-display",
+                    "blank",
+                     ["bar","newLayer"],
+              "blank",
+              "blank",
+              ["display-text", () => "Your Fox Music duration is <h2 style='color: orange; text-shadow: orange 0px 0px 10px;'>"+formatTime(player.s.durationFox)+"</h2>." ],
+              "blank",
+              ["display-text", () => "Multiplier of duration increaser is <h2 style='color: orange; text-shadow: orange 0px 0px 10px;'>"+format(tmp.s.foxMusicDurationMult)+"</h2>x." ],
+              "blank",
+              "blank",
+              ["display-text", () => "Exact Fox Music duration in seconds: <h3 style='color: orange; text-shadow: orange 0px 0px 10px;'>"+format(player.s.durationFox)+"</h3>." ],
+            ]},
       
     },
+  
+    microtabs: {
+        stuff: {
+            "Sessions": {
+                content: [
+                   
+                    ["display-text", () => "You have <h1 style='color: indigo; text-shadow: indigo 0px 0px 10px;'>"+formatWhole(player.s.therapyS)+"</h1> Therapy Sessions, which are multiplying Sessions gain by "+format(tmp.s.theraEffect)+"x, but are dividing Points gain by the same amount." ],
+                    ["row", [["clickable", 11]]],
+                    "blank",
+                ]
+            },
+            "Axis": {
+                buttonStyle() { return {'border-color': 'white'} },
+                unlocked() {return hasUpgrade("s",27)},
+                content: [
+                   
+                    ["display-text", () => "You have <h1 style='color: indigo; text-shadow: indigo 0px 0px 10px;'>"+formatWhole(player.s.therapyS)+"</h1> Therapy Sessions." ],
+                    ["display-text", () => "You have <h2 style='color: white; text-shadow: white 0px 0px 10px;'>"+formatWhole(player.s.makeraxisX)+"</h2> Maker Axis-X." ],
+                    ["display-text", () => "You have <h2 style='color: white; text-shadow: white 0px 0px 10px;'>"+formatWhole(player.s.makeraxisY)+"</h2> Maker Axis-Y." ],
+                    ["display-text", () => "You have <h2 style='color: white; text-shadow: white 0px 0px 10px;'>"+formatWhole(player.s.makeraxisZ)+"</h2> Maker Axis-Z." ],
+                    "blank",
+                    ["display-text", () => "You have <h3 style='color: white; text-shadow: white 0px 0px 10px;'>"+formatWhole(player.s.axisX)+"</h3> Axis-X." ],
+                    ["display-text", () => "You have <h3 style='color: white; text-shadow: white 0px 0px 10px;'>"+formatWhole(player.s.axisY)+"</h3> Axis-Y." ],
+                    ["display-text", () => "You have <h3 style='color: white; text-shadow: white 0px 0px 10px;'>"+formatWhole(player.s.axisZ)+"</h3> Axis-Z." ],
+                    ["display-text", () =>    (hasUpgrade("s",47)) ? "You have <h3 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(tmp.s.axisProduction)+"</h3> Production of Axis.":""],
+                    ["row", [["buyable",11],["buyable",12],["buyable",13]]],
+                    "blank",
+                    ["display-text", () => "Multiplier for Axis-X gain is "+format(tmp.s.axisXMult)+"." ],
+                    ["display-text", () => "Multiplier for Axis-Y gain is "+format(tmp.s.axisYMult)+"." ],
+                    ["display-text", () => "Multiplier for Axis-Z gain is "+format(tmp.s.axisZMult)+"." ],
+                ]
+            },
+            
+       
+    },
+},
+bars: {
+    newLayer: {
+        fillStyle: {'background-color' : "navy"},
+        baseStyle: {'background-color' : "orange"},
+       
+        textStyle: {'color': 'black'},
+
+     
+        direction: RIGHT,
+        width: 700,
+        height: 90,
+        progress() {
+            return Math.log10(player.s.durationFox) / Math.log10(Number.MAX_VALUE)
+        },
+        display() {
+            return formatTime(player.s.durationFox) + " / "+formatTime(Number.MAX_VALUE)+"<br>Reach infinite time to unlock a new Layer."
+        },
+        
+        unlocked() {return hasUpgrade("s",57)},
+
+    },
+    
+},
     position: 0,
     gainExp() { // Calculate the exponent on main currency from bonuses
         let exp = new Decimal(1)
@@ -2820,7 +3023,7 @@ return req;}, // Can be a function that takes requirement increases into account
 
         return base;
     },
-   
+    axisProduction() { return player.s.axisX.times(player.s.axisY).times(player.s.axisZ) },
     effectBase() {
         let base = new Decimal(1.05);
         
@@ -2972,11 +3175,1164 @@ return req;}, // Can be a function that takes requirement increases into account
         },	
         22: {
             title: "Ichorpuff",
-            description: "Complete the game.",
+            description: "Weaken the softcap for Sessions.",
             cost: new Decimal(1000),
            unlocked() {return hasUpgrade("s",21)},
           
         },	
+        23: {
+            title: "Therapist",
+            description: "Unlock Therapy Sessions.",
+            cost: new Decimal(5000),
+           unlocked() {return hasUpgrade("s",22)},
+          
+        },	
+        24: {
+            title: "Junia Power I",
+            description: "Multiply Multi Points gain based on Therapy Sessions and divide Therapy Session cost.",
+
+		
+						currencyDisplayName: "therapy sessions",
+						currencyInternalName: "therapyS",
+						currencyLayer: "s",
+						cost() { return new Decimal(2) },
+				
+           unlocked() {return hasUpgrade("s",23)},
+           effect() {
+                
+              
+            let eff = player.s.therapyS.plus(1).pow(0.385)
+
+
+            return eff;
+        },
+        effect2() {
+                
+              
+            let eff = player.s.therapyS.plus(1).pow(0.3)
+
+
+            return eff;
+        },
+        
+        
+        effectDisplay() { return format(tmp.s.upgrades[24].effect)+"x, /"+format(tmp.s.upgrades[24].effect2)+"." },
+        },	
+        25: {
+            title: "Junia Power II",
+            description: "Softcap for Sessions starts later based on Therapy Sessions and divide Therapy Session cost based on Sessions.",
+
+		
+						currencyDisplayName: "therapy sessions",
+						currencyInternalName: "therapyS",
+						currencyLayer: "s",
+						cost() { return new Decimal(3) },
+				
+           unlocked() {return hasUpgrade("s",24)},
+           effect() {
+                
+              
+            let eff = player.s.therapyS.add(1).log10().sqrt().div(1.15).times(1);
+
+
+            return eff;
+        },
+        effect2() {
+                
+              
+            let eff = player.s.points.plus(1).pow(0.05)
+
+
+            return eff;
+        },
+        
+        
+        effectDisplay() { return "+"+format(tmp.s.upgrades[25].effect)+" later, /"+format(tmp.s.upgrades[25].effect2)+"." },
+        },	
+        26: {
+            title: "Baker's Junia",
+            description: "The base effect for Therapy Session is added by 0.1.",
+
+		
+						currencyDisplayName: "therapy sessions",
+						currencyInternalName: "therapyS",
+						currencyLayer: "s",
+						cost() { return new Decimal(4) },
+				
+           unlocked() {return hasUpgrade("s",25)},
+           
+        },	
+        27: {
+            title: "Thumbjunia",
+            description: "Unlock Axis and Therapy Sessions effect base is added by your Therapy Sessions.",
+
+		
+						currencyDisplayName: "therapy sessions",
+						currencyInternalName: "therapyS",
+						currencyLayer: "s",
+						cost() { return new Decimal(4) },
+				
+           unlocked() {return hasUpgrade("s",26)},
+           effect() {
+                
+              
+            let eff = player.s.therapyS.add(1).log10().sqrt().div(1.9).times(1);
+
+
+            return eff;
+        },
+     
+    
+        
+        
+        effectDisplay() { return "+"+format(tmp.s.upgrades[27].effect) },
+        },	
+       31: {
+            title: "Cronejunia",
+            description: "Gain 100% of Sessions per second.",
+
+		
+						currencyDisplayName: "X-axis",
+						currencyInternalName: "axisX",
+						currencyLayer: "s",
+						cost() { return new Decimal(60) },
+				
+           unlocked() {return hasUpgrade("s",27)},
+           
+        },	
+        32: {
+            title: "Gildjunia",
+            description: "Multi Points multiply Axis-X gain.",
+
+		
+						currencyDisplayName: "X-axis",
+						currencyInternalName: "axisX",
+						currencyLayer: "s",
+						cost() { return new Decimal(240) },
+				
+           unlocked() {return hasUpgrade("s",31)},
+           effect() {
+                
+              
+            let eff = player.m.points.plus(1).pow(0.0015)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+        effectDisplay() { return format(tmp.s.upgrades[32].effect)+"x" },
+        },	
+        33: {
+            title: "Ordinary Junia",
+            description: "Points multiply Axis-X gain.",
+
+		
+						currencyDisplayName: "X-axis",
+						currencyInternalName: "axisX",
+						currencyLayer: "s",
+						cost() { return new Decimal(1000) },
+				
+           unlocked() {return hasUpgrade("s",32)},
+           effect() {
+                
+              
+            let eff = player.points.plus(1).pow(0.004)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+        effectDisplay() { return format(tmp.s.upgrades[33].effect)+"x" },
+        },	
+        34: {
+            title: "Golden Junia",
+            description: "Sessions multiply Axis-X gain.",
+
+		
+						currencyDisplayName: "X-axis",
+						currencyInternalName: "axisX",
+						currencyLayer: "s",
+						cost() { return new Decimal(1500) },
+				
+           unlocked() {return hasUpgrade("s",33)},
+           effect() {
+                
+              
+            let eff = player.s.points.plus(1).pow(0.05)
+
+
+            return eff;
+        },
+        effectDisplay() { return format(tmp.s.upgrades[34].effect)+"x" },
+    
+        
+        
+
+        },	
+        35: {
+            title: "Shimmerjunia",
+            description: "Axis-X multiplys Session gain.",
+
+		
+						currencyDisplayName: "X-axis",
+						currencyInternalName: "axisX",
+						currencyLayer: "s",
+						cost() { return new Decimal(2500) },
+				
+           unlocked() {return hasUpgrade("s",34)},
+           effect() {
+                
+              
+            let eff = player.s.axisX.plus(1).pow(0.03)
+
+
+            return eff;
+        },
+        effectDisplay() { return format(tmp.s.upgrades[35].effect)+"x" },
+    
+        
+        
+
+        },	
+        36: {
+            title: "Elderjunia",
+            description: "Axis-X multiplys Points gain.",
+
+		
+						currencyDisplayName: "X-axis",
+						currencyInternalName: "axisX",
+						currencyLayer: "s",
+						cost() { return new Decimal(3000) },
+				
+           unlocked() {return hasUpgrade("s",35)},
+           effect() {
+                
+              
+            let eff = player.s.axisX.plus(1).pow(0.05)
+
+
+            return eff;
+        },
+        effectDisplay() { return format(tmp.s.upgrades[36].effect)+"x" },
+    
+        
+        
+
+        },	
+        37: {
+            title: "Bakejunia",
+            description: "Unlock Axis-Y and Axis-X makes the Sessions softcap start later.",
+
+		
+						currencyDisplayName: "X-axis",
+						currencyInternalName: "axisX",
+						currencyLayer: "s",
+						cost() { return new Decimal(3500) },
+				
+           unlocked() {return hasUpgrade("s",36)},
+           effect() {
+                
+              
+            let eff = player.s.axisX.add(1).log10().sqrt().div(2).times(1);
+
+
+            return eff;
+        },
+        effectDisplay() { return "+"+format(tmp.s.upgrades[37].effect)+" later" },
+    
+        
+        
+
+        },	
+        41: {
+            title: "Chocojunia",
+            description: "Points multiply Axis-X and Axis-Y gain.",
+
+		
+						currencyDisplayName: "Y-axis",
+						currencyInternalName: "axisY",
+						currencyLayer: "s",
+						cost() { return new Decimal(60) },
+				
+           unlocked() {return hasUpgrade("s",37)},
+           effect() {
+                
+              
+            let eff = player.m.points.plus(1).pow(0.0011)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+        effectDisplay() { return format(tmp.s.upgrades[41].effect)+"x" },
+           
+        },	
+        42: {
+            title: "White Chocojunia",
+            description: "Points multiply Axis-X and Axis-Y gain.",
+
+		
+						currencyDisplayName: "Y-axis",
+						currencyInternalName: "axisY",
+						currencyLayer: "s",
+						cost() { return new Decimal(245) },
+				
+           unlocked() {return hasUpgrade("s",41)},
+           effect() {
+                
+              
+            let eff = player.points.plus(1).pow(0.0011)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+        effectDisplay() { return format(tmp.s.upgrades[42].effect)+"x" },
+           
+        },	
+        43: {
+            title: "White Junia",
+            description: "Points multiply Axis-X and Axis-Y gain.",
+
+		
+						currencyDisplayName: "Y-axis",
+						currencyInternalName: "axisY",
+						currencyLayer: "s",
+						cost() { return new Decimal(1100) },
+				
+           unlocked() {return hasUpgrade("s",42)},
+           effect() {
+                
+              
+            let eff = player.s.points.plus(1).pow(0.04)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+        effectDisplay() { return format(tmp.s.upgrades[43].effect)+"x" },
+           
+        },	
+        44: {
+            title: "Brown Junia",
+            description: "Axis-Y multiply Axis-X gain.",
+
+		
+						currencyDisplayName: "Y-axis",
+						currencyInternalName: "axisY",
+						currencyLayer: "s",
+						cost() { return new Decimal(1100) },
+				
+           unlocked() {return hasUpgrade("s",43)},
+           effect() {
+                
+              
+            let eff = player.s.axisY.plus(1).pow(0.1)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+        effectDisplay() { return format(tmp.s.upgrades[44].effect)+"x" },
+           
+        },	
+        45: {
+            title: "Meddlejunia",
+            description: "Make the Session softcap gain start 250 later.",
+
+		
+						currencyDisplayName: "Y-axis",
+						currencyInternalName: "axisY",
+						currencyLayer: "s",
+						cost() { return new Decimal(2500) },
+				
+           unlocked() {return hasUpgrade("s",44)},
+         
+           
+        },	
+        46: {
+            title: "Whiskerjunia",
+            description: "Multiply Session gain based on Axis-Y (magnified wth Axis-X)",
+
+		
+						currencyDisplayName: "Y-axis",
+						currencyInternalName: "axisY",
+						currencyLayer: "s",
+						cost() { return new Decimal(2850) },
+				
+           unlocked() {return hasUpgrade("s",45)},
+           effect() {
+                
+              
+            let eff = player.s.axisY.plus(1).pow(0.05).times(player.s.axisX.plus(1).pow(0.03))
+
+
+            return eff;
+        },
+     
+    
+        
+        
+        effectDisplay() { return format(tmp.s.upgrades[46].effect)+"x" },
+         
+           
+        },	
+        47: {
+            title: "Chimejunia",
+            description: "Unlock Axis-Z and Axis-X, Axis-Y boost each others gain.",
+
+		
+						currencyDisplayName: "Y-axis",
+						currencyInternalName: "axisY",
+						currencyLayer: "s",
+						cost() { return new Decimal(3500) },
+				
+           unlocked() {return hasUpgrade("s",45)},
+           effect() {
+                
+                
+                let exp = 0.08
+                return {x: player.s.axisY.add(0.001).log10().pow(exp), y: player.s.axisX.add(0.0005).log10().pow(exp)} 
+            },
+     
+    
+        
+        
+       effectDisplay() { return "+"+format(tmp.s.upgrades[47].effect.x)+" to Axis-X gain, +"+format(tmp.s.upgrades[47].effect.y)+" to Axis-Y gain." },
+         
+           
+        },	
+        51: {
+            title: "Nursejunia",
+            description: "Axis-Z gain is boosted based on 20% of OoM of Production of Axis",
+
+		
+						currencyDisplayName: "Z-axis",
+						currencyInternalName: "axisZ",
+						currencyLayer: "s",
+						cost() { return new Decimal(75) },
+				
+           unlocked() {return hasUpgrade("s",45)},
+           effect() {
+                
+              
+            let eff = tmp.s.axisProduction.add(1).log10().times(0.2)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[51].effect)+"x" },
+         
+           
+        },	
+        52: {
+            title: "Drowsyjunia",
+            description: "Axis-Z gain is boosted based on Points.",
+
+		
+						currencyDisplayName: "Z-axis",
+						currencyInternalName: "axisZ",
+						currencyLayer: "s",
+						cost() { return new Decimal(240) },
+				
+           unlocked() {return hasUpgrade("s",51)},
+           effect() {
+                
+              
+            let eff = player.points.plus(1).pow(0.006)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[52].effect)+"x" },
+         
+           
+        },	
+        53: {
+            title: "Wardjunia",
+            description: "Axis-Z gain is boosted based on Axis-X.",
+
+		
+						currencyDisplayName: "Z-axis",
+						currencyInternalName: "axisZ",
+						currencyLayer: "s",
+						cost() { return new Decimal(750) },
+				
+           unlocked() {return hasUpgrade("s",52)},
+           effect() {
+                
+              
+            let eff = player.s.axisX.plus(1).pow(0.042)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[53].effect)+"x" },
+         
+           
+        },	
+        54: {
+            title: "Keenjunia",
+            description: "Axis-Z gain is boosted based on Axis-Y.",
+
+		
+						currencyDisplayName: "Z-axis",
+						currencyInternalName: "axisZ",
+						currencyLayer: "s",
+						cost() { return new Decimal(1500) },
+				
+           unlocked() {return hasUpgrade("s",53)},
+           effect() {
+                
+              
+            let eff = player.s.axisY.plus(1).pow(0.035)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[54].effect)+"x" },
+         
+           
+        },	
+        55: {
+            title: "Queenjunia",
+            description: "Axis-Y gain is boosted based on Axis-Z.",
+
+		
+						currencyDisplayName: "Z-axis",
+						currencyInternalName: "axisZ",
+						currencyLayer: "s",
+						cost() { return new Decimal(3000) },
+				
+           unlocked() {return hasUpgrade("s",54)},
+           effect() {
+                
+              
+            let eff = player.s.axisZ.plus(1).pow(0.045)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[55].effect)+"x" },
+         
+           
+        },	
+        56: {
+            title: "Juicy Queenjunia",
+            description: "Points gain is raised ^1.3.",
+
+		
+						currencyDisplayName: "Z-axis",
+						currencyInternalName: "axisZ",
+						currencyLayer: "s",
+						cost() { return new Decimal(10000) },
+				
+           unlocked() {return hasUpgrade("s",55)},
+         
+         
+           
+        },	
+        57: {
+            title: "Dukejunia",
+            description: "Unlock Fox Music.",
+
+		
+						
+						cost() { let cost = new Decimal(5e13)
+                       if (hasMilestone("sm",0)) return new Decimal(5e7)
+                            return cost; },
+				
+           unlocked() {return hasUpgrade("s",56)},
+         
+         
+           
+        },	
+        61: {
+            title: "Crumbjunia",
+            description: "Multiply the multiplier for Fox duration based on Points.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(60) },
+				
+           unlocked() {return hasUpgrade("s",57)},
+           effect() {
+                
+              
+            let eff = player.points.plus(1).pow(0.00185)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[61].effect)+"x" },
+         
+           
+        },
+        62: {
+            title: "Doughjunia",
+            description: "Multiply the multiplier for Fox duration based on Production of Axis.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(150) },
+				
+           unlocked() {return hasUpgrade("s",61)},
+           effect() {
+                
+              
+            let eff = tmp.s.axisProduction.plus(1).pow(0.0185)
+
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[62].effect)+"x" },
+         
+           
+        },		
+        63: {
+            title: "Glovejunia",
+            description: "Raise the multiplier of Fox Duration based on Multi Points.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(300) },
+				
+           unlocked() {return hasUpgrade("s",62)},
+           effect() {
+                
+              
+            let eff = player.m.points.plus(1).pow(0.0005)
+
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[63].effect) },
+         
+           
+        },		
+        64: {
+            title: "Cheapjunia",
+            description: "Raise the multiplier of Fox Duration based on Sessions.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(550) },
+				
+           unlocked() {return hasUpgrade("s",63)},
+           effect() {
+                
+              
+            let eff = player.s.points.plus(1).pow(0.04)
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[64].effect) },
+         
+           
+        },	
+        65: {
+            title: "Fool's Junia",
+            description: "Raise the multiplier of Fox Duration based on Points.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(86400) },
+				
+           unlocked() {return hasUpgrade("s",64)},
+           effect() {
+                
+              
+            let eff = player.points.plus(1).pow(0.001)
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[65].effect) },
+         
+           
+        },			
+        66: {
+            title: "Wrinklejunia",
+            description: "Raise the multiplier of Fox Duration based on Axis-X.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(6.04e5) },
+				
+           unlocked() {return hasUpgrade("s",65)},
+           effect() {
+                
+              
+            let eff = player.s.axisX.plus(1).pow(0.02)
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[66].effect) },
+         
+           
+        },			
+        67: {
+            title: "Green Junia",
+            description: "Raise the multiplier of Fox Duration based on Axis-Y.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(31557600) },
+				
+           unlocked() {return hasUpgrade("s",66)},
+           effect() {
+                
+              
+            let eff = player.s.axisY.plus(1).pow(0.01)
+
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[67].effect) },
+         
+           
+        },			
+        71: {
+            title: "Shriekjunia",
+            description: "Each Session upgrade brought raises the multi of Fox Duration.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(1e9) },
+				
+           unlocked() {return hasUpgrade("s",67)},
+           effect() {
+                
+              
+             let eff = Decimal.pow(1.005, player.s.upgrades.length);
+
+             if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[71].effect) },
+         
+           
+        },		
+        72: {
+            title: "Tidyjunia",
+            description: "Raise the multiplier of Fox Duration based on Axis-Z.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(2.5e10) },
+				
+           unlocked() {return hasUpgrade("s",71)},
+           effect() {
+                
+              
+            let eff = player.s.axisZ.plus(1).pow(0.00895)
+
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[72].effect) },
+         
+           
+        },			
+        73: {
+            title: "Everjunia",
+            description: "Raise the multiplier of Fox Duration based on Therapy Sessions.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(2.5e11) },
+				
+           unlocked() {return hasUpgrade("s",72)},
+           effect() {
+                
+              
+            let eff = player.s.therapyS.plus(1).pow(0.07)
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[73].effect) },
+         
+           
+        },			
+        74: {
+            title: "Ichorjunia",
+            description: "The effect of Therapy Sessions also affects Fox Duration Time (at a reduced time)",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(2e13) },
+				
+           unlocked() {return hasUpgrade("s",73)},
+           effect() {
+                
+              
+            let eff = tmp.s.theraEffect.plus(1).pow(0.07)
+
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[74].effect) },
+         
+           
+        },			
+        75: {
+            title: "Senia",
+            description: "The effect of Sessions also affects Fox Duration Time (at a reduced time)",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(1.5e19) },
+				
+           unlocked() {return hasUpgrade("s",74)},
+           effect() {
+                
+              
+            let eff = tmp.s.effect.plus(1).pow(0.04)
+
+            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "^"+format(tmp.s.upgrades[75].effect) },
+         
+           
+        },			
+        76: {
+            title: "Masteria",
+            description: "Raise the Fox Multiplier Duration by 10.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(5e28) },
+				
+           unlocked() {return hasUpgrade("s",75)},
+           
+         
+           
+        },			
+        77: {
+            title: "Grandmasteria",
+            description: "Raise the Fox Multiplier Duration by 1.11.",
+
+		
+						currencyDisplayName: "seconds duration of fox music",
+						currencyInternalName: "durationFox",
+						currencyLayer: "s",
+						cost() { return new Decimal(1e275) },
+				
+           unlocked() {return hasUpgrade("s",76)},
+           
+         
+           
+        },			
     },
+
+    theraATB() {
+        let base = new Decimal(0);
+        if (hasUpgrade("s",26)) base = base.add(0.1)
+        return base;
+    },
+
+
+    theraEffBase() {
+        let base = new Decimal(1.5);
+        
+        // ADD
+        base = base.plus(tmp.s.theraATB);
+        
+        // MULTIPLY
+     
+        
+        return base.pow(tmp.s.theraPow);
+    },
+    theraPow() {
+        let power = new Decimal(1);
+   
+        return power;
+    },
+  axisXMult() {let mult = new Decimal(1)
+if (hasUpgrade("s",32)) mult = mult.times(upgradeEffect("s",32))
+if (hasUpgrade("s",33)) mult = mult.times(upgradeEffect("s",33))
+if (hasUpgrade("s",34)) mult = mult.times(upgradeEffect("s",34))
+if (hasUpgrade("s",41)) mult = mult.times(upgradeEffect("s",41))
+if (hasUpgrade("s",42)) mult = mult.times(upgradeEffect("s",42))
+if (hasUpgrade("s",43)) mult = mult.times(upgradeEffect("s",43))
+if (hasUpgrade("s",44)) mult = mult.times(upgradeEffect("s",44))
+if (hasUpgrade("s",47)) mult = mult.times(upgradeEffect("s",47).x)
+return mult;},
+axisYMult() {let mult = new Decimal(1)
+    if (hasUpgrade("s",41)) mult = mult.times(upgradeEffect("s",41))
+    if (hasUpgrade("s",42)) mult = mult.times(upgradeEffect("s",42))
+    if (hasUpgrade("s",43)) mult = mult.times(upgradeEffect("s",43))
+    if (hasUpgrade("s",47)) mult = mult.times(upgradeEffect("s",47).y)
+    if (hasUpgrade("s",55)) mult = mult.times(upgradeEffect("s",55))
+    return mult;},
+    axisZMult() {let mult = new Decimal(1)
+     
+        if (hasUpgrade("s",51)) mult = mult.times(upgradeEffect("s",51))
+        if (hasUpgrade("s",52)) mult = mult.times(upgradeEffect("s",52))
+        if (hasUpgrade("s",53)) mult = mult.times(upgradeEffect("s",53))
+        if (hasUpgrade("s",54)) mult = mult.times(upgradeEffect("s",54))
+        return mult;},
+    
+
+		update(diff) {
+			if (player.s.makeraxisX.gte(1)) player.s.axisX = player.s.axisX.plus(player.s.makeraxisX.div(20).times(tmp.s.axisXMult));
+            if (player.s.makeraxisY.gte(1)) player.s.axisY = player.s.axisY.plus(player.s.makeraxisY.div(20).times(tmp.s.axisYMult));
+            if (player.s.makeraxisZ.gte(1)) player.s.axisZ = player.s.axisZ.plus(player.s.makeraxisZ.div(20).times(tmp.s.axisZMult));
+            if (hasUpgrade("s",57)) player.s.durationFox = player.s.durationFox.plus(tmp.s.foxMusicDurationMult.div(20))
+		},
+		
+		
+        foxMusicDurationMult() {let duration = new Decimal(1)
+
+            if (player.s.durationFox.gte(Number.MAX_VALUE)) return new Decimal(1)
+            if (hasMilestone("sm",0)) duration = duration.pow(duration.lt(788940000)?1.2:0.8);
+            if (hasUpgrade("s",61)) duration = duration.times(upgradeEffect("s",61))
+            if (hasUpgrade("s",62)) duration = duration.times(upgradeEffect("s",62))
+            if (hasUpgrade("s",63)) duration = duration.pow(upgradeEffect("s",63))
+            if (hasUpgrade("s",64)) duration = duration.pow(upgradeEffect("s",64))
+            if (hasUpgrade("s",65)) duration = duration.pow(upgradeEffect("s",65))
+            if (hasUpgrade("s",66)) duration = duration.pow(upgradeEffect("s",66))
+            if (hasUpgrade("s",67)) duration = duration.pow(upgradeEffect("s",67))
+            if (hasUpgrade("s",71)) duration = duration.pow(upgradeEffect("s",71))
+            if (hasUpgrade("s",72)) duration = duration.pow(upgradeEffect("s",72))
+            if (hasUpgrade("s",73)) duration = duration.pow(upgradeEffect("s",73))
+            if (hasUpgrade("s",74)) duration = duration.pow(upgradeEffect("s",74))
+            if (hasUpgrade("s",75)) duration = duration.pow(upgradeEffect("s",75))
+            if (hasUpgrade("s",76)) duration = duration.pow(10)
+            if (hasUpgrade("s",77)) duration = duration.pow(1.11)
+            return duration;},
+    theraEffect() {
+        return Decimal.pow(tmp.s.theraEffBase, player.s.therapyS.plus()).max(1).times(1);
+    }, 
+    clickables:{
+        11: {
+            gain() {
+            let gain = new Decimal(1)
+
+            return gain;
+            },
+            
+            cost() {
+                let cost = new Decimal(5000)
+                if (hasUpgrade("s",24)) cost = cost.div(upgradeEffect2("s",24))
+                if (hasUpgrade("s",25)) cost = cost.div(upgradeEffect2("s",25))
+                if (player.s.therapyS.gte(3)) cost = cost.times(player.s.therapyS.times(0.5))
+                if (player.s.therapyS.gte(5)) cost = cost.times(player.s.therapyS.times(2))
+                if (player.s.therapyS.gte(8)) cost = cost.times(player.s.therapyS.times(4))
+                if (player.s.therapyS.gte(12)) cost = cost.times(player.s.therapyS.pow(8))
+                return cost;
+                },
+            display() {
+                let dis = "Unalive all Sessions into Therapy Sessions <br><br>You will gain "+formatWhole(tmp.s.clickables[11].gain)+" Therapy Sessions on unalive."
+            
+           
+                return dis
+            },
+            canClick() {
+                return player.s.points.gte(tmp.s.clickables[11].cost.times(player.s.therapyS.add(1)))
+            },
+            onClick() {
+              player.s.therapyS = player.s.therapyS.add(tmp.s.clickables[11].gain)
+   
+                player.s.points = new Decimal(0)
+                player.s.best = new Decimal(0)
+                player.s.total = new Decimal(0)
+                },
+                style: {'height':'130px', 'width':'175px', 'font-size':'13px',
+               
+            
+            },
+            
+            },
+    },
+    buyables: {
+        11: {
+           
+              cost(x) { return new Decimal(2).add(new Decimal(x).add(1)) },
+              title() { return "Maker Axis-X" },
+  
+              display() { // Everything else displayed in the buyable button after the title
+                  let data = tmp[this.layer].buyables[this.id]
+                  return "Cost: " + format(data.cost) + " therapy sessions\n\
+                  Amount: " + player[this.layer].buyables[this.id] + "\n\
+                 Gain 1 Maker Axis-X"
+              }, 
+            
+              canAfford() { return player.s.therapyS.gte(this.cost()) },
+              buy() {
+                 player.s.therapyS =player.s.therapyS.sub(this.cost())
+                    player.s.makeraxisX = player.s.makeraxisX.add(1)
+                  setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+              },
+          unlocked() {return hasUpgrade("s",27)},
+          style: {'background-color':'white',},
+          },
+          12: {
+           scalePow() {
+            let pow = new Decimal(1)
+            if (getBuyableAmount("s",12).gte(10)) pow = pow.add(1)
+        return pow;   
+        },
+            cost(x) { return new Decimal(5000).pow(new Decimal(1.0057).pow(x)).pow(tmp.s.buyables[this.id].scalePow) },
+            title() { return "Maker Axis-Y" },
+
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " X-axis \n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Gain 1 Maker Axis-Y"
+            }, 
+          
+            canAfford() { return player.s.axisX.gte(this.cost()) },
+            buy() {
+               player.s.axisX =player.s.axisX.sub(this.cost())
+                  player.s.makeraxisY = player.s.makeraxisY.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        unlocked() {return hasUpgrade("s",37)},
+        style: {'background-color':'white',},
+        },
+        13: {
+            scalePow() {
+             let pow = new Decimal(1)
+             if (getBuyableAmount("s",13).gte(10)) pow = pow.add(1)
+         return pow;   
+         },
+             cost(x) { return new Decimal(3500).pow(new Decimal(1.01).pow(x)).pow(tmp.s.buyables[this.id].scalePow) },
+             title() { return "Maker Axis-Z" },
+ 
+             display() { // Everything else displayed in the buyable button after the title
+                 let data = tmp[this.layer].buyables[this.id]
+                 return "Cost: " + format(data.cost) + " Y-axis \n\
+                 Amount: " + player[this.layer].buyables[this.id] + "\n\
+                Gain 1 Maker Axis-Z"
+             }, 
+           
+             canAfford() { return player.s.axisY.gte(this.cost()) },
+             buy() {
+                player.s.axisY =player.s.axisY.sub(this.cost())
+                   player.s.makeraxisZ = player.s.makeraxisZ.add(1)
+                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+             },
+         unlocked() {return hasUpgrade("s",47)},
+         style: {'background-color':'white',},
+         },
+    }
 
 })

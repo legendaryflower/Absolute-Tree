@@ -80,11 +80,25 @@ function formatWhole(decimal) {
 }
 
 function formatTime(s) {
-    if (s < 60) return format(s) + "s"
-    else if (s < 3600) return formatWhole(Math.floor(s / 60)) + "m " + format(s % 60) + "s"
-    else if (s < 86400) return formatWhole(Math.floor(s / 3600)) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
-    else if (s < 31536000) return formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
-    else return formatWhole(Math.floor(s / 31536000)) + "y " + formatWhole(Math.floor(s / 86400) % 365) + "d " + formatWhole(Math.floor(s / 3600) % 24) + "h " + formatWhole(Math.floor(s / 60) % 60) + "m " + format(s % 60) + "s"
+	if (s < 315360000) {
+		var str = format(s % 60) + "s"
+		if (s >= 60) str = formatWhole(Math.floor(s / 60) % 60) + "m " + str
+		if (s >= 3600) str = formatWhole(Math.floor(s / 3600) % 24) + "h " + str
+		if (s >= 86400) str = formatWhole(Math.floor(s / 86400) % 365) + "d " + str
+		if (s >= 31536000) str = formatWhole(Math.floor(s / 31536000)) + "y " + str
+		return str
+	} else {
+		var y = s / 31536000
+		if (y >= 1e100) return format(y / 1e100) + " black hole eras"
+		if (y >= 1e40) return format(y / 1e40) + " degenerate eras"
+		if (y >= 1e9) return format(y / 1e9) + " aeons"
+		if (y >= 1e6) return format(y / 1e6) + " megannums"
+        if (y >= 1000) return format(y / 1000) + " millenniums"
+        if (y >= 100) return format(y / 100) + " centuries"
+        if (y >= 25) return format(y / 25) + " human generations"
+        if (y >= 10) return format(y / 10) + " decades"
+		return formatWhole(y) + " years"
+	}
 }
 
 function toPlaces(x, precision, maxAccepted) {

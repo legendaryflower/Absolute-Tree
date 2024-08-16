@@ -13,13 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3",
+	num: "0.3.1",
 	name: "Beta",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v0.3.1 Beta</h3><br>
+- Added Smackeries.<br>
+- Added Therapy Sessions.<br>
+- Added Axis.<br>
+- Added Musics. (no, im not copying camellia tree)<br>
+- Made the Ichorpuff weaken the softcap.<br>
+- Added 40 new Session Upgrades.<br>
+- Balanced up to a day duration Fox Music with Smackery Level I.<br>
+<br>
 <h3>v0.3 Beta</h3><br>
 - Font changed into Nova Mono.<br>
 - Added a hotkey to reset for Ultra Points.<br>
@@ -115,7 +124,13 @@ function getPointGen() {
 	if (hasUpgrade("n",16)) gain = gain.times(upgradeEffect("n",16));
 	if (hasUpgrade("n",23)) gain = gain.times(upgradeEffect("n",23));
 	if (player.s.unlocked) gain = gain.times(tmp.s.effect)
+	
 	if (hasUpgrade("s",15)) gain = gain.times(upgradeEffect("s",15))
+
+	if (hasUpgrade("s",23)) gain = gain.div(tmp.s.theraEffect)
+	if (hasUpgrade("s",36)) gain = gain.times(upgradeEffect("s",36))
+	if (hasUpgrade("s",56)) gain = gain.pow(1.3)
+	if (hasMilestone("sm",0)) gain = gain.pow(1.05)
 	return gain
 }
 
@@ -124,12 +139,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: Getting the Ichorpuff upgrade.`,
+var displayThings = [`<span>Current Endgame: 1 hour duration of Fox Music and got Smackery Level I.`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return hasUpgrade("a",22)
+	return player.s.durationFox.gte(3600)&&player.sm.points.gte(1)
 }
 
 
