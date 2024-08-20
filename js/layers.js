@@ -1,3 +1,7 @@
+const getRandomNumber = (min, max) => {
+    return Math.random() * (max - min) + min
+  }
+
 addLayer("m", {
     name: "multi", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "M", // This appears on the layer's node. Default is the id with the first letter capitalized
@@ -23,7 +27,7 @@ addLayer("m", {
 
         if (hasUpgrade("m",14)) mult = mult.times(upgradeEffect("m",14))
         if (hasUpgrade("m",16)) mult = mult.times(upgradeEffect("m",16))
-        if (hasUpgrade("m",17)) mult = mult.times(tmp.m.buyables[12].effect.first);
+        if (hasUpgrade("m",17)&&!hasUpgrade("s",111)) mult = mult.times(tmp.m.buyables[12].effect.first);
         if (hasUpgrade("a",11)) mult = mult.times(tmp.a.buyables[11].effect.first);
         if (hasUpgrade("m",21)) mult = mult.times(upgradeEffect("m",21))
         if (hasChallenge("a",12)) mult = mult.times(challengeEffect("a",12))
@@ -35,7 +39,9 @@ addLayer("m", {
         if (player.s.unlocked) mult = mult.times(tmp.s.effect)
         if (hasUpgrade("s",13)) mult = mult.times(upgradeEffect("s",13))
         if (hasUpgrade("s",24)) mult = mult.times(upgradeEffect("s",24))
-        if (hasMilestone("sm",0)) mult = mult.pow(0.8)
+        if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) mult = mult.pow(0.8)
+        if (hasUpgrade("s",111)) mult = mult.pow(1.11)
+        if (hasUpgrade("s",111)) mult = mult.times(buyableEffect("m",14).add(1).pow(88));
         return mult
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
@@ -55,7 +61,7 @@ addLayer("m", {
         if (hasUpgrade("a",37)) return new Decimal(0.35125)
 
         if (player.m.points.gte("1e1600")) power = power.div(player.m.points.add(2).log10().add(1).log10())
-       
+        if (hasUpgrade("s",111)) return new Decimal(0.333)
         return power;
     },
     row: 0, // Row the layer is in on the tree (0 is the first row)
@@ -81,6 +87,10 @@ addLayer("m", {
         if (player.m.auto2) {
      
             setBuyableAmount("m",14,tmp.m.buyables[14].canAfford?player.m.points.div(10000).log(28).floor().add(1):getBuyableAmount("m",14)) 
+          }
+          if (hasUpgrade("s",112)) {
+     
+            setBuyableAmount("m",21,tmp.m.buyables[21].canAfford?player.m.points.div("1e410").log(100).floor().add(1):getBuyableAmount("m",21)) 
           }
       },
       passiveGeneration() { return (hasMilestone("a", 3)||player.s.unlocked)?1:0 },
@@ -437,6 +447,7 @@ currencyLayer: "n",
     buyables: {
         11: {
             costScaling() {let cost =  new Decimal(1)
+                if (hasUpgrade("s",111)) return new Decimal(1)
                if(!hasUpgrade("a",37)) if (player.m.buyables[11].gte(1100)) cost = cost.add(0.25)
                if(!hasUpgrade("a",37))if (player.m.buyables[11].gte(tmp.m.softcapBuyables)) cost = cost.add(0.75)
                if(!hasUpgrade("a",37)) if (inChallenge("a",22)) cost = cost.times(tmp.a.costScalingStartHarsh)
@@ -468,7 +479,7 @@ currencyLayer: "n",
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
-
+             unlocked() {return !hasUpgrade("s",111)}
            
         },
         12: {
@@ -476,8 +487,9 @@ currencyLayer: "n",
                 if (hasUpgrade("m",27)) free = free.plus(buyableEffect("m",14))
                 return free;},
                 costScaling() {let cost =  new Decimal(1)
-                    if(!hasUpgrade("a",37))    if (player.m.buyables[12].gte(1100)) cost = cost.add(0.25)
-                    if(!hasUpgrade("a",37))   if (player.m.buyables[11].gte(tmp.m.softcapBuyables)) cost = cost.add(0.75)
+                    if (hasUpgrade("s",111)) return new Decimal(1)
+                    if(!hasUpgrade("a",37)||player.s.unlocked)    if (player.m.buyables[12].gte(1100)) cost = cost.add(0.25)
+                    if(!hasUpgrade("a",37)||player.s.unlocked)   if (player.m.buyables[11].gte(tmp.m.softcapBuyables)) cost = cost.add(0.75)
                     if(!hasUpgrade("a",37))   if (inChallenge("a",22)) cost = cost.times(tmp.a.costScalingStartHarsh)
             return cost;
                      },
@@ -504,7 +516,7 @@ currencyLayer: "n",
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
-            unlocked() {return hasUpgrade("m",17)},
+            unlocked() {return hasUpgrade("m",17)&&!hasUpgrade("s",111)},
 
         },
         13: {
@@ -573,7 +585,34 @@ currencyLayer: "n",
             unlocked() {return player.a.unlocked},
          
         },
+        21: {
+          
+        title() {return "Unhackable Sessions"},
+            cost(x) { return new Decimal("1e410").mul(new Decimal(100).pow(x))},
         
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " multi points\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Multiply Session gain by " + format(data.effect.first) + "x. "
+            },
+            effect(x) { // Effects of owning x of the items, x is a decimal
+                let eff = {}
+                if (x.gte(0)) eff.first = Decimal.pow(1.5, x)
+                else eff.first = Decimal.pow(1/50, x.times(-1).pow(1.0))
+            
+                if (x.gte(0)) eff.second = x.pow(0.8)
+                else eff.second = x.times(-1).pow(0.8).times(-1)
+                return eff;
+            },
+            canAfford() { return player[this.layer].points.gte(this.cost()) },
+            buy() {
+                player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+             unlocked() {return hasUpgrade("s",112)}
+           
+        },
     },
 })
 
@@ -2747,7 +2786,10 @@ addLayer("joke", {
     },
 	
             
- tabFormat: ["clickables"],
+ tabFormat: ["clickables",  
+ ["display-image", () =>   (hasUpgrade("s",107)||hasMilestone("sm",2)) ? "/Previous Awakening.png":""],
+ ["display-text", () =>   (hasUpgrade("s",107)||hasMilestone("sm",2)) ? "This is RTLF's awakening form from 2023.":""],],
+ 
   symbol: "",
     row: "side",
    
@@ -2759,7 +2801,7 @@ const textParticle = {
     spread: 20,
     gravity: 0,
     time: 3,
-    speed: 0,
+    speed: 5,
     text: function() { return "You made nothing happen."},
     offset: 30,
     fadeInTime: 1,
@@ -2780,12 +2822,15 @@ addLayer("sm", {
     return ("Current Smackery Level: "+formatWhole(player.sm.points))
 },
 
+
+
 	tabFormat: [
         ["display-text", () => "Your current Smackery Level is  <h1 style='color: navy; text-shadow: navy 0px 0px 10px;'>" + formatWhole(player.sm.points) + "</h1>, which translates to these milestones below:" ],
          "clickables",
 			"blank",
 		
-                   
+            ["display-text", () =>   (hasMilestone("sm",2)) ? '<font color="red"><b>NOTE: After getting the 3rd Smackery Alteration, you are unable to get any more Smackery Points!</b></font>':""],
+ 
 			"blank",
 	
 			"blank",
@@ -2800,16 +2845,23 @@ addLayer("sm", {
             
            
             display() {
-                let dis = "Smack all of your progression to advance the next level of your Smackery Levels."
+                let dis = "Smack all of your progression to advance the next level of your Smackery Levels.<br>Requires:"+format(tmp.sm.clickables[11].cost)+" Fox Duration"+(hasMilestone("sm",1) ? " and have bought Celestial Upgrade 17.":"")
             
            
                 return dis
             },
+           
+            cost() {
+                let cost = new Decimal("1.79769e308")
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) return new Decimal(7200)
+        
+                return cost;
+                },
+            
             canClick() {
-                let click = player.s.durationFox.gte(Number.MAX_VALUE)
-                if (hasMilestone("sm",0)) return false
-                /*        if (hasMilestione("sm",0)) return new Decimal(86400)*/
-                return click;
+                let can = player.s.durationFox.gte(tmp.sm.clickables[11].cost) && (hasMilestone("sm",1)?hasUpgrade("s",107):true)
+                if (hasMilestone("sm",2)) return false;
+                return can;
             },
             onClick() {
 
@@ -2818,8 +2870,11 @@ addLayer("sm", {
               for (var a = 11; a <= 99; a++) setBuyableAmount("m", a, new Decimal(0))
               player.points = new Decimal(0)
               player.m.points = new Decimal(0)
-             player.s.upgrades = []
-             for (var a = 11; a <= 99; a++) setBuyableAmount("s", a, new Decimal(0))
+
+             if (!hasMilestone("sm",1)) player.s.upgrades = []
+             else player.s.upgrades = [11,12,13,14,15,16,17,21,22,23,24,25,26,27,31,32,33,34,35,36,37,41,42,43,44,45,46,47,52,53,54,55,56,57]
+             for (var a = 11; a <= 21; a++) setBuyableAmount("s", a, new Decimal(0))
+                player.s.celestial = new Decimal(0)
                 player.s.points = new Decimal(0)
                 player.s.best = new Decimal(0)
                 player.s.total = new Decimal(0)
@@ -2846,6 +2901,16 @@ addLayer("sm", {
         effectDescription: "<br><h3>Progression is altered.</h3><br><br>Multi points gain is ^0.8.<br>Points gain is ^1.05.<br>Sessions gain is ^0.8.<br>Prior to 1 Human Generation duration of Fox Music, multi raised ^1.2, but ^0.8 after reaching.<br>Session gain softcap starts +20 earlier.<br>All Fox upgrades that raise the multi of Fox duration is ^0.6.",
         unlocked() {return player.sm.points.gte(1)},
        },
+       1: {requirementDescription: "2 Smackery Points",
+       done() {return player[this.layer].points.gte(2)}, // Used to determine when to give the milestone
+       effectDescription: "<br><h3>Progression is altered.</h3><br><br>Revert the 5th effect of Alteration Level I<br>Keep Session upgrades except for upgrades that boost Fox Multi and Nursejunia.<br>Unlock Sanctuaries, and revert the Multi Point gain debuff.",
+       unlocked() {return player.sm.points.gte(2)},
+      },
+      2: {requirementDescription: "3 Smackery Points",
+      done() {return player[this.layer].points.gte(3)}, // Used to determine when to give the milestone
+      effectDescription: "<br><h3>Progression is altered.</h3><br><br>Unlock RTLF Awakening Forms.<br>All normal Axis generation is multiplied by 3.",
+      unlocked() {return player.sm.points.gte(3)},
+     },
      
       
     },
@@ -2870,6 +2935,13 @@ addLayer("s", {
         makeraxisZ: new Decimal(0),
         productofAxis: new Decimal(0),
         durationFox: new Decimal(0),
+        celestial: new Decimal(0),
+        axisXSquared: new Decimal(0),
+        axisYSquared: new Decimal(0),
+        axisZSquared: new Decimal(0),
+        parCel: new Decimal(0),
+        buyable41Amn: new Decimal(0),
+        buyable42Amn: new Decimal(0),
     }},
     color: "indigo",
     requires() { let req = new Decimal("1e5350") 
@@ -2892,6 +2964,9 @@ return req;}, // Can be a function that takes requirement increases into account
  if (hasUpgrade("s",35)) mult = mult.times(upgradeEffect("s",35))
  if (hasUpgrade("s",46)) mult = mult.times(upgradeEffect("s",46))
  if (hasMilestone("sm",0)) mult = mult.pow(0.8)
+ if (hasMilestone("sm",2)) mult =mult.times(tmp.s.Buyable41Eff)
+ if (hasUpgrade("s",112)) mult = mult.times(tmp.m.buyables[21].effect.first);
+ if (hasUpgrade("s",116)) mult = mult.times(upgradeEffect("s",116))
         return mult
     },
     softcap() {let cap = new Decimal(100)
@@ -2984,6 +3059,42 @@ return pow;
                     ["display-text", () => "Multiplier for Axis-Z gain is "+format(tmp.s.axisZMult)+"." ],
                 ]
             },
+            "Sanctuaries": {
+                buttonStyle() { return {'border-color': 'white'} },
+                unlocked() {return hasMilestone("sm",1)},
+                content: [
+                   
+                    ["display-text", () => "You have <h1 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(tmp.s.axisProduction)+"</h1> Production of Axis." ],
+                    ,
+                    ["row", [["buyable",21],["buyable",22],["buyable",23],["buyable",24]]],
+                    ["row", [["buyable",31],["buyable",32]]],
+                    "blank",
+                    ["display-text", () => "You have <h2 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(player.s.celestial)+"</h2> Celestials." ],
+                    ["display-text", () => "NOTE: Purchasing the firts 5 Celestial Upgrades resets the amount of Sanctuary buyable!" ],
+                    ["row", [["upgrade", 101],["upgrade", 102],["upgrade", 103],["upgrade", 104],["upgrade", 105],["upgrade", 106],["upgrade", 107]]],
+                    ["row", [["upgrade", 111],["upgrade", 112],["upgrade", 113],["upgrade", 114],["upgrade", 115],["upgrade", 116],["upgrade", 117]]],
+                    ["row", [["upgrade", 121],["upgrade", 122],["upgrade", 123],["upgrade", 124],["upgrade", 125],["upgrade", 126],["upgrade", 127]]],
+                    ["row", [["upgrade", 131],["upgrade", 132],["upgrade", 133],["upgrade", 134],["upgrade", 135],["upgrade", 136],["upgrade", 137]]],
+                    ["row", [["upgrade", 141],["upgrade", 142],["upgrade", 143],["upgrade", 144],["upgrade", 145],["upgrade", 146],["upgrade", 147]]],
+                    ["display-text", () => "You have <h2 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(player.s.axisXSquared)+"</h2> Axis-X², which are multiplying Axis-X's multi by "+format(tmp.s.XSquareEff)+"x." ],
+                    ["display-text", () => "You have <h2 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(player.s.axisYSquared)+"</h2> Axis-Y², which are multiplying Axis-Y's multi by "+format(tmp.s.YSquareEff)+"x." ],
+                    ["display-text", () => "You have <h2 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(player.s.axisZSquared)+"</h2> Axis-Z², which are multiplying Axis-Z's multi by "+format(tmp.s.ZSquareEff)+"x." ],
+                    ["display-text", () =>    (hasUpgrade("s", 105)||hasMilestone("sm",2)) ? "You have <h3 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(tmp.s.axisProduction2)+"</h3> Production of Axis².":""],
+                    "blank",
+                   ["display-text", () =>    (hasUpgrade("s",105)||hasMilestone("sm",2)) ? "You have <h3 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(player.s.parCel)+"</h3> Parallel Celestials, which are generating "+format(tmp.s.freeCel)+" Celestials per second.":""],
+                   ["display-text", () =>    (hasMilestone("sm",2)) ? "You need to purchase Celestial Upgrade 17 to generate passive Celestials per second.":""],
+                ]
+            },
+            'Awakening Forms': {
+                buttonStyle() { return {'border-color': 'green'} },
+                unlocked() {return hasMilestone("sm",2)},
+                content: [
+                    ["display-text", () => "You have <h1 style='color: white; text-shadow: white 0px 0px 10px;'>"+format(tmp.s.axisProduction2)+"</h1> Production of Axis<sup>2</sup>.<br>" ],
+                    ["row", [["buyable",41],["buyable",42]]],
+                    ["display-text", () => "You have <h1 style='color: green; text-shadow: green 0px 0px 10px;'>"+formatWhole(player.s.buyable41Amn)+"</h1> Awakening Power, which are multiplying Sessions and Points gain by "+format(tmp.s.Buyable41Eff)+"x." ],
+                    ["display-text", () => "You have <h1 style='color: green; text-shadow: green 0px 0px 10px;'>"+formatWhole(player.s.buyable42Amn)+"</h1> Awakening Power<sup>2</sup>, which are multiplying the effect of Awakening Power and boosting its buyable cap by "+format(tmp.s.Buyable42Eff)+"x." ],
+                ]
+            },
             
        
     },
@@ -3024,6 +3135,7 @@ bars: {
         return base;
     },
     axisProduction() { return player.s.axisX.times(player.s.axisY).times(player.s.axisZ) },
+    axisProduction2() { return player.s.axisXSquared.times(player.s.axisYSquared).times(player.s.axisZSquared) },
     effectBase() {
         let base = new Decimal(1.05);
         
@@ -3106,6 +3218,7 @@ bars: {
             let eff = player.s.points.plus(1).pow(0.009)
 
          if (hasUpgrade("s",16)) eff = eff.pow(5)
+         if (hasUpgrade("s",113)) eff = eff.pow(1.4)
             return eff;
         },
         
@@ -3151,7 +3264,7 @@ bars: {
               
             let eff = player.s.points.plus(1).pow(0.02)
 
-
+            if (hasUpgrade("s",113)) eff = eff.times(15)
             return eff;
         },
         
@@ -3777,7 +3890,7 @@ bars: {
 		
 						
 						cost() { let cost = new Decimal(5e13)
-                       if (hasMilestone("sm",0)) return new Decimal(5e7)
+                       if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) return new Decimal(5e7)
                             return cost; },
 				
            unlocked() {return hasUpgrade("s",56)},
@@ -3855,7 +3968,7 @@ bars: {
               
             let eff = player.m.points.plus(1).pow(0.0005)
 
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
             return eff;
         },
      
@@ -3881,7 +3994,7 @@ bars: {
                 
               
             let eff = player.s.points.plus(1).pow(0.04)
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
 
             return eff;
         },
@@ -3908,7 +4021,7 @@ bars: {
                 
               
             let eff = player.points.plus(1).pow(0.001)
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
 
             return eff;
         },
@@ -3935,7 +4048,7 @@ bars: {
                 
               
             let eff = player.s.axisX.plus(1).pow(0.02)
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
 
             return eff;
         },
@@ -3963,7 +4076,7 @@ bars: {
               
             let eff = player.s.axisY.plus(1).pow(0.01)
 
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
             return eff;
         },
      
@@ -3990,7 +4103,7 @@ bars: {
               
              let eff = Decimal.pow(1.005, player.s.upgrades.length);
 
-             if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+             if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
             return eff;
         },
      
@@ -4017,7 +4130,7 @@ bars: {
               
             let eff = player.s.axisZ.plus(1).pow(0.00895)
 
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
             return eff;
         },
      
@@ -4043,7 +4156,7 @@ bars: {
                 
               
             let eff = player.s.therapyS.plus(1).pow(0.07)
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
 
             return eff;
         },
@@ -4071,7 +4184,7 @@ bars: {
               
             let eff = tmp.s.theraEffect.plus(1).pow(0.07)
 
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
             return eff;
         },
      
@@ -4098,7 +4211,7 @@ bars: {
               
             let eff = tmp.s.effect.plus(1).pow(0.04)
 
-            if (hasMilestone("sm",0)) eff = eff.pow(0.6)
+            if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
             return eff;
         },
      
@@ -4138,7 +4251,331 @@ bars: {
            
          
            
+        },		
+        101: {
+            title: "Celestialities",
+            description: "Multiply all Axis gain based on Celestials. Unlock Axis-X².",
+
+		
+						currencyDisplayName: "celestials",
+						currencyInternalName: "celestial",
+						currencyLayer: "s",
+						cost() { return new Decimal(3) },
+				
+           unlocked() {return player.s.celestial.gte(2)||hasUpgrade("s",101)},
+           effect() {
+                
+              
+            let eff = player.s.celestial.plus(1).pow(0.1)
+
+           
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[101].effect)+"x" },
+         onPurchase() {return setBuyableAmount("s",21, new Decimal(0))},
+           
+        },		
+        102: {
+            title: "Parallel Celestialities",
+            description: "Axis-X² multiplys Axis-Y gain.",
+
+		
+						currencyDisplayName: "celestials",
+						currencyInternalName: "celestial",
+						currencyLayer: "s",
+						cost() { return new Decimal(4) },
+				
+           unlocked() {return hasUpgrade("s",101)},
+           effect() {
+                
+              
+            let eff = player.s.axisXSquared.plus(1).pow(0.15)
+            if (hasUpgrade("s",113)) eff = eff.pow(1.41)
+           
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[102].effect)+"x" },
+         onPurchase() {return setBuyableAmount("s",21, new Decimal(0))},
+           
         },			
+        103: {
+            title: "Mutated Celestials",
+            description: "Production of Axis multiplies Points gain. Unlock Axis-Y²",
+
+		
+						currencyDisplayName: "celestials",
+						currencyInternalName: "celestial",
+						currencyLayer: "s",
+						cost() { return new Decimal(5) },
+				
+           unlocked() {return hasUpgrade("s",102)},
+           effect() {
+                
+              
+            let eff = tmp.s.axisProduction.plus(1).pow(0.05)
+
+           
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[103].effect)+"x" },
+         onPurchase() {return setBuyableAmount("s",21, new Decimal(0))},
+           
+        },		
+        104: {
+            title: "Prime Celestials",
+            description: "Axis-X² multiplies Points gain (mangified by your Axis-Y²)",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(6) },
+                
+           unlocked() {return hasUpgrade("s",103)},
+           effect() {
+                
+              
+            let eff = player.s.axisXSquared.plus(1).pow(0.08).times(player.s.axisYSquared.plus(1).pow(0.1))
+    
+           
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[104].effect)+"x" },
+         onPurchase() {return setBuyableAmount("s",21, new Decimal(0))},
+           
+        },		
+        105: {
+            title: "Parallel Universe",
+            description: "Unlock Axis-Z² and Parallel Celestials. Buying Axis-X² does not reset Axis-X and buying Axis-Y² also does not reset Axis-Y. Points gain is multiplied by your Production of Axis. Buying a Sanctuary does not reset your Axis.",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(7) },
+                
+           unlocked() {return hasUpgrade("s",104)},
+           effect() {
+                
+              
+            let eff = tmp.s.axisProduction.plus(1).pow(0.08)
+    
+           
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[105].effect)+"x" },
+         onPurchase() {return setBuyableAmount("s",21, new Decimal(0))},
+           
+        },		
+        106: {
+            title: "Ascended Celestials",
+            description: "Multiply Axis gain based on Production of Axis²",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(20) },
+                
+           unlocked() {return hasUpgrade("s",105)},
+           effect() {
+                
+              
+            let eff = tmp.s.axisProduction2.plus(1).pow(0.08)
+    
+           
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[106].effect)+"x" },
+
+           
+        },		
+        107: {
+            title: "Transcended Celestials",
+            description: "Points gain is multiplied by your Production of Axis (magnified by your squared version of it)",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(35) },
+                
+           unlocked() {return hasUpgrade("s",106)},
+           effect() {
+                
+              
+            let eff = tmp.s.axisProduction.plus(1).pow(0.08).times(tmp.s.axisProduction2.plus(1).pow(0.08))
+    
+           
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[107].effect)+"x" },
+
+           
+        },		
+        111: {
+            title: "Cardinal Celestials",
+            description: "Multi Points gain is raised ^1.111, however you will lose the effect of Multi Points and Points buyable, Free Points's effect multiply Points gain (raised ^64) and Free Multi Points's effect multiply Multi Points gain (raised ^88)",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(50) },
+                
+           unlocked() {return hasUpgrade("s",107)&&hasMilestone("sm",1)},
+       
+          
+
+           
+        },		
+        112: {
+            title: "Axis Primary",
+            description: "Unlock a new Multi Buyable and all Axis Production is raised ^1.15.",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(75) },
+                
+           unlocked() {return hasUpgrade("s",111)},
+       
+          
+
+           
+        },		
+        113: {
+            title: "Production of Axis<sup>3</sup>",
+            description: "Fool's Bolete is raised ^1.4, Tidygrass is multiplied by 15 and Parallel Celestialities is raised ^1.41.",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(125) },
+                
+           unlocked() {return hasUpgrade("s",112)},
+       
+          
+
+           
+        },		
+        114: {
+            title: "Endworldly Celestials",
+            description: "Gain more passive Celestials per second based on Points gain.",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(150) },
+                
+           unlocked() {return hasUpgrade("s",113)},
+           effect() {
+                
+              
+            let eff = player.points.add(1).log10().sqrt().div(75).times(1);
+    
+           if (hasUpgrade("s",116)) eff = eff.times(tmp.s.upgrades[116].efficiency)
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "+"+format(tmp.s.upgrades[114].effect) },
+          
+
+           
+        },		
+        115: {
+            title: "Alternate Universes",
+            description: "Divide the costs of Axis Squared Buyables based on Sessions.",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(225) },
+                
+           unlocked() {return hasUpgrade("s",114)},
+           effect() {
+                
+              
+            let eff = player.s.points.add(1).log10().sqrt().div(4).times(1);
+    
+           
+            return eff;
+        },
+     
+    
+        
+        
+       effectDisplay() { return "-"+format(tmp.s.upgrades[115].effect) },
+          
+
+           
+        },		
+        116: {
+            title: "Wingo",
+            description() { return "Endworldly Celestials upgrade is multiplied by "+format(tmp.s.upgrades[116].efficiency)+" Session gain is multiplied by your Multi Points."},
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(350) },
+                
+           unlocked() {return hasUpgrade("s",115)},
+           effect() {
+                
+              
+            let eff = player.m.points.plus(1).pow(0.0064)
+    
+           
+            return eff;
+        },
+       efficiency() {let eff = new Decimal(16)
+    
+    return eff;},
+    
+        
+        
+       effectDisplay() { return format(tmp.s.upgrades[116].effect)+"x" },
+          
+
+           
+        },		
+        
     },
 
     theraATB() {
@@ -4146,6 +4583,12 @@ bars: {
         if (hasUpgrade("s",26)) base = base.add(0.1)
         return base;
     },
+freeCel() {
+    if (!getBuyableAmount("s",31).gte(1)) return new Decimal(0)
+    let passive = new Decimal(0.1).times(player.s.parCel)
+  if (hasUpgrade("s",114)) passive = passive.add(upgradeEffect("s",114))
+    return passive;
+},
 
 
     theraEffBase() {
@@ -4173,6 +4616,11 @@ if (hasUpgrade("s",42)) mult = mult.times(upgradeEffect("s",42))
 if (hasUpgrade("s",43)) mult = mult.times(upgradeEffect("s",43))
 if (hasUpgrade("s",44)) mult = mult.times(upgradeEffect("s",44))
 if (hasUpgrade("s",47)) mult = mult.times(upgradeEffect("s",47).x)
+if (hasUpgrade("s",101)) mult = mult.times(tmp.s.XSquareEff)
+if (hasUpgrade("s",101)) mult = mult.times(upgradeEffect("s",101))
+if (hasUpgrade("s",106)) mult = mult.times(upgradeEffect("s",106))
+if (hasMilestone("s",2)) mult = mult.times(3)
+if (hasUpgrade("s",112)) mult = mult.pow(1.15)
 return mult;},
 axisYMult() {let mult = new Decimal(1)
     if (hasUpgrade("s",41)) mult = mult.times(upgradeEffect("s",41))
@@ -4180,6 +4628,12 @@ axisYMult() {let mult = new Decimal(1)
     if (hasUpgrade("s",43)) mult = mult.times(upgradeEffect("s",43))
     if (hasUpgrade("s",47)) mult = mult.times(upgradeEffect("s",47).y)
     if (hasUpgrade("s",55)) mult = mult.times(upgradeEffect("s",55))
+    if (hasUpgrade("s",101)) mult = mult.times(upgradeEffect("s",101))
+    if (hasUpgrade("s",102)) mult = mult.times(upgradeEffect("s",102))
+    if (hasUpgrade("s",103)) mult = mult.times(tmp.s.YSquareEff)
+    if (hasUpgrade("s",106)) mult = mult.times(upgradeEffect("s",106))
+    if (hasMilestone("s",2)) mult = mult.times(3)
+    if (hasUpgrade("s",112)) mult = mult.pow(1.15)
     return mult;},
     axisZMult() {let mult = new Decimal(1)
      
@@ -4187,6 +4641,11 @@ axisYMult() {let mult = new Decimal(1)
         if (hasUpgrade("s",52)) mult = mult.times(upgradeEffect("s",52))
         if (hasUpgrade("s",53)) mult = mult.times(upgradeEffect("s",53))
         if (hasUpgrade("s",54)) mult = mult.times(upgradeEffect("s",54))
+        if (hasUpgrade("s",101)) mult = mult.times(upgradeEffect("s",101))
+        if (hasUpgrade("s",105)) mult = mult.times(tmp.s.ZSquareEff)
+        if (hasUpgrade("s",106)) mult = mult.times(upgradeEffect("s",106))
+        if (hasMilestone("s",2)) mult = mult.times(3)
+        if (hasUpgrade("s",112)) mult = mult.pow(1.15)
         return mult;},
     
 
@@ -4195,6 +4654,7 @@ axisYMult() {let mult = new Decimal(1)
             if (player.s.makeraxisY.gte(1)) player.s.axisY = player.s.axisY.plus(player.s.makeraxisY.div(20).times(tmp.s.axisYMult));
             if (player.s.makeraxisZ.gte(1)) player.s.axisZ = player.s.axisZ.plus(player.s.makeraxisZ.div(20).times(tmp.s.axisZMult));
             if (hasUpgrade("s",57)) player.s.durationFox = player.s.durationFox.plus(tmp.s.foxMusicDurationMult.div(20))
+            if (hasUpgrade("s",105)) player.s.celestial = player.s.celestial.plus(tmp.s.freeCel.div(20))
 		},
 		
 		
@@ -4220,6 +4680,7 @@ axisYMult() {let mult = new Decimal(1)
     theraEffect() {
         return Decimal.pow(tmp.s.theraEffBase, player.s.therapyS.plus()).max(1).times(1);
     }, 
+    
     clickables:{
         11: {
             gain() {
@@ -4236,6 +4697,9 @@ axisYMult() {let mult = new Decimal(1)
                 if (player.s.therapyS.gte(5)) cost = cost.times(player.s.therapyS.times(2))
                 if (player.s.therapyS.gte(8)) cost = cost.times(player.s.therapyS.times(4))
                 if (player.s.therapyS.gte(12)) cost = cost.times(player.s.therapyS.pow(8))
+
+                if (player.s.therapyS.gte(14)) cost = cost.times(player.s.therapyS.pow(player.s.therapyS.add(1.15)))
+
                 return cost;
                 },
             display() {
@@ -4259,8 +4723,61 @@ axisYMult() {let mult = new Decimal(1)
             
             },
             
-            },
+      
+        },
     },
+    Buyable41ATB() {
+        let base = new Decimal(0);
+       
+        return base;
+    },
+    Buyable41Base() {
+        let base = new Decimal(1.25);
+        
+        // ADD
+        base = base.plus(tmp.s.Buyable41ATB);
+        
+        // MULTIPLY
+     
+        
+        return base.pow(tmp.s.Buyable41Pow);
+    },
+    Buyable41Pow() {
+        let power = new Decimal(1);
+   
+        return power;
+    },
+
+ Buyable41Eff() {
+        let eff = Decimal.pow(tmp.s.Buyable41Base, player.s.buyable41Amn.plus()).max(1).times(1);
+        if (getBuyableAmount("s",42).gte(1)) eff = eff.times(tmp.s.Buyable42Eff)
+        return eff;
+    }, 
+    Buyable42ATB() {
+        let base = new Decimal(0);
+       
+        return base;
+    },
+    Buyable42Base() {
+        let base = new Decimal(1.5);
+        
+        // ADD
+        base = base.plus(tmp.s.Buyable42ATB);
+        
+        // MULTIPLY
+     
+        
+        return base.pow(tmp.s.Buyable42Pow);
+    },
+    Buyable42Pow() {
+        let power = new Decimal(1);
+   
+        return power;
+    },
+
+ Buyable42Eff() {
+        return Decimal.pow(tmp.s.Buyable42Base, player.s.buyable42Amn.plus()).max(1).times(1);
+    }, 
     buyables: {
         11: {
            
@@ -4287,6 +4804,7 @@ axisYMult() {let mult = new Decimal(1)
            scalePow() {
             let pow = new Decimal(1)
             if (getBuyableAmount("s",12).gte(10)) pow = pow.add(1)
+            if (getBuyableAmount("s",12).gte(15)) pow = pow.add(getBuyableAmount("s",12).div(10))
         return pow;   
         },
             cost(x) { return new Decimal(5000).pow(new Decimal(1.0057).pow(x)).pow(tmp.s.buyables[this.id].scalePow) },
@@ -4312,7 +4830,8 @@ axisYMult() {let mult = new Decimal(1)
             scalePow() {
              let pow = new Decimal(1)
              if (getBuyableAmount("s",13).gte(10)) pow = pow.add(1)
-         return pow;   
+             if (getBuyableAmount("s",13).gte(15)) pow = pow.add(getBuyableAmount("s",13).div(10))
+         return pow;  
          },
              cost(x) { return new Decimal(3500).pow(new Decimal(1.01).pow(x)).pow(tmp.s.buyables[this.id].scalePow) },
              title() { return "Maker Axis-Z" },
@@ -4333,6 +4852,294 @@ axisYMult() {let mult = new Decimal(1)
          unlocked() {return hasUpgrade("s",47)},
          style: {'background-color':'white',},
          },
-    }
+         21: {
+            scalePow() {
+                let pow = new Decimal(1)
+                if (getBuyableAmount("s",21).gte(4)) pow = pow.add(0.0185)
+                if (getBuyableAmount("s",21).gte(6)) pow = pow.add(getBuyableAmount("s",21).add(1).div(100))
+             
+            return pow;   
+            },
+             cost(x) { return new Decimal(1e17).pow(new Decimal(1.01).pow(x)).pow(tmp.s.buyables[this.id].scalePow)  },
+             title() { return "Sanctuary" },
+ 
+             display() { // Everything else displayed in the buyable button after the title
+                 let data = tmp[this.layer].buyables[this.id]
+                 return "Cost: " + format(data.cost) + " Production of Axis  \n\
+                 Amount: " + player[this.layer].buyables[this.id] + "\n\
+                Sacrifice all of your Axis productions, but gain Celestials."
+             }, 
+           
+             canAfford() { return tmp.s.axisProduction.gte(this.cost()) },
+             buy() {
+              if (!hasUpgrade("s",105))  player.s.axisX = new Decimal(1)
+              if (!hasUpgrade("s",105))    player.s.axisY = new Decimal(1)
+              if (!hasUpgrade("s",105))    player.s.axisZ = new Decimal(1)
+                   player.s.celestial = player.s.celestial.add(1)
+                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+             },
+         unlocked() {return hasMilestone("sm",1)},
+         style: {'background-color':'white',},
+         },
+         22: {
+            scalePow() {
+                let pow = new Decimal(1)
+                if (getBuyableAmount("s",22).gte(4)) pow = pow.add(0.5)
+                if (hasUpgrade("s",115)) pow = pow.sub(upgradeEffect("s",115))
+                if (getBuyableAmount("s",22).gte(15)) pow = pow.add(getBuyableAmount("s",22).div(20))
+            return pow;   
+            },
+            cost(x) { return new Decimal(1e16).pow(new Decimal(1.03).pow(x)).pow(tmp.s.buyables[this.id].scalePow)  },
+            title() { return "Axis-X²" },
+
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " Production of Axis  \n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Sacrifice all of your Axis productions, but gain Axis-X²."
+            }, 
+          
+            canAfford() { return tmp.s.axisProduction.gte(this.cost()) },
+            buy() {
+                if (!hasUpgrade("s",105))   player.s.axisX = new Decimal(1),
+               player.s.axisY = new Decimal(1),
+               player.s.axisZ = new Decimal(1),
+                  player.s.axisXSquared = player.s.axisXSquared.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        unlocked() {return hasUpgrade("s",101)},
+        style: {'background-color':'white',},
+        },
+        23: {
+            scalePow() {
+                let pow = new Decimal(1)
+                if (getBuyableAmount("s",23).gte(4)) pow = pow.add(0.5)
+                if (hasUpgrade("s",115)) pow = pow.sub(upgradeEffect("s",115))
+                if (getBuyableAmount("s",23).gte(12)) pow = pow.add(getBuyableAmount("s",23).div(19))
+            return pow;   
+            },
+            cost(x) { return new Decimal(5e16).pow(new Decimal(1.08).pow(x)).pow(tmp.s.buyables[this.id].scalePow)  },
+            title() { return "Axis-Y²" },
+
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " Production of Axis  \n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Sacrifice all of your Axis productions, but gain Axis-Y²."
+            }, 
+          
+            canAfford() { return tmp.s.axisProduction.gte(this.cost()) },
+            buy() {
+               player.s.axisX = new Decimal(1)
+
+               if (!hasUpgrade("s",105))   player.s.axisY = new Decimal(1),
+               player.s.axisZ = new Decimal(1),
+                  player.s.axisYSquared = player.s.axisYSquared.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        unlocked() {return hasUpgrade("s",103)},
+        style: {'background-color':'white',},
+        },
+        24: {
+            scalePow() {
+                let pow = new Decimal(1)
+                if (getBuyableAmount("s",23).gte(4)) pow = pow.add(0.5)
+                if (hasUpgrade("s",115)) pow = pow.sub(upgradeEffect("s",115))
+                if (getBuyableAmount("s",24).gte(6)) pow = pow.add(getBuyableAmount("s",24).div(18))
+            return pow;   
+            },
+            cost(x) { return new Decimal(2.5e17).pow(new Decimal(1.15).pow(x)).pow(tmp.s.buyables[this.id].scalePow)  },
+            title() { return "Axis-Z²" },
+
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " Production of Axis  \n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Sacrifice all of your Axis productions, but gain Axis-Z²."
+            }, 
+          
+            canAfford() { return tmp.s.axisProduction.gte(this.cost()) },
+            buy() {
+               player.s.axisX = new Decimal(1)
+
+               player.s.axisY = new Decimal(1),
+               player.s.axisZ = new Decimal(1),
+                  player.s.axisZSquared = player.s.axisZSquared.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        unlocked() {return hasUpgrade("s",105)},
+        style: {'background-color':'white',},
+        },
+        31: {
+            scalePow() {
+                let pow = new Decimal(1)
+              
+            return pow;   
+            },
+            cost(x) { return new Decimal(1e18).pow(new Decimal(1.15).pow(x)).pow(tmp.s.buyables[this.id].scalePow)  },
+            title() { return "Parallel Celestials" },
+
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Cost: " + format(data.cost) + " Production of Axis  \n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Sacrifice all of your Axis productions and Sanctuaries purchased, but gain 1 Parallel Celestials."
+            }, 
+          
+            canAfford() { return tmp.s.axisProduction.gte(this.cost()) },
+            buy() {
+               player.s.axisX = new Decimal(1),
+               
+             player.s.axisY = new Decimal(1),
+               player.s.axisZ = new Decimal(1),
+              
+                  player.s.parCel = player.s.parCel.add(1)
+                  setBuyableAmount("s", 21, new Decimal(0))
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+        unlocked() {return hasUpgrade("s",105)},
+        style: {'background-color':'white',},
+        },
+        41: {
+            scalePow() {
+                let pow = new Decimal(1)
+              
+            return pow;   
+            },
+            cost(x) { return new Decimal(12).mul(new Decimal(1.1).pow(x)).pow(tmp.s.buyables[this.id].scalePow)  },
+            title() { return "Awakening Power" },
+
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Req: " + format(data.cost) + " Production of Axis<sup>2</sup>  \n\
+                Power: <small>ARTLF<sup>" + tmp[this.layer].buyables[this.id].powAwk + "</sup>+"+ player[this.layer].buyables[this.id]+"\n\
+                Purchase limit is " + tmp[this.layer].buyables[this.id].purchaseLimit + "."
+            }, 
+           powAwk() { let awk = new Decimal(-7)
+        if (getBuyableAmount("s",42).gte(1)) awk = awk.add(1)
+        return awk;},
+            canAfford() { return tmp.s.axisProduction2.gte(this.cost()) },
+            buy() {
+              player.s.buyable41Amn = player.s.buyable41Amn.add(1)
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            amount() {let amn = new Decimal(tmp[this.layer].buyables[this.id])
+            return amn;},
+        unlocked() {return hasMilestone("sm",2)},
+        purchaseLimit () {let limit = new Decimal(15)
+        if (getBuyableAmount("s",42).gte(1)) limit = limit.times(tmp.s.Buyable42Eff)
+    return limit;},
+        style: {'background-color':'green',},
+        },
+        42: {
+            scalePow() {
+                let pow = new Decimal(1)
+              
+            return pow;   
+            },
+            cost(x) { return new Decimal(72).mul(new Decimal(1.5).pow(x)).pow(tmp.s.buyables[this.id].scalePow)  },
+            title() { return "Enhance Awaken Form" },
+
+            display() { // Everything else displayed in the buyable button after the title
+                let data = tmp[this.layer].buyables[this.id]
+                return "Req: " + format(data.cost) + " Production of Axis<sup>2</sup>\n\
+                Amount: " + player[this.layer].buyables[this.id] + "\n\
+               Reset all of your normal Axis and Awakening power, but gain Awakening Power<sup>2</sup> (look below for effects)"
+            }, 
+          
+            canAfford() { return tmp.s.axisProduction2.gte(this.cost()) },
+            buy() {
+               player.s.axisX = new Decimal(1),
+               
+             player.s.axisY = new Decimal(1),
+               player.s.axisZ = new Decimal(1),
+              
+             
+                  player.s.buyable41Amn = new Decimal(0),
+                  player.s.buyable42Amn = player.s.buyable42Amn.add(1)
+                  setBuyableAmount("s", 41, new Decimal(0))
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+            },
+            unlocked() {return hasMilestone("sm",2)},
+        style: {'background-color':'green',},
+        },
+      
+    },
+    XSquareATB() {
+        let base = new Decimal(0);
+       
+        return base;
+    },
+
+
+    XSquareBase() {
+        let base = new Decimal(1.35);
+        
+        // ADD
+        base = base.plus(tmp.s.XSquareATB);
+        
+        // MULTIPLY
+     
+        
+        return base.pow(tmp.s.XSquarePow);
+    },
+    XSquarePow() {
+        let power = new Decimal(1);
+   
+        return power;
+    },
+
+ XSquareEff() {
+        return Decimal.pow(tmp.s.XSquareBase, player.s.axisXSquared.plus()).max(1).times(1);
+    }, 
+    YSquareATB() {
+        let base = new Decimal(0);
+       
+        return base;
+    },
+
+
+    YSquareBase() {
+        let base = new Decimal(1.33);
+        
+        // ADD
+        base = base.plus(tmp.s.YSquareATB);
+        
+        // MULTIPLY
+     
+        
+        return base.pow(tmp.s.YSquarePow);
+    },
+    YSquarePow() {
+        let power = new Decimal(1);
+   
+        return power;
+    },
+
+ YSquareEff() {
+        return Decimal.pow(tmp.s.YSquareBase, player.s.axisYSquared.plus()).max(1).times(1);
+    }, 
+   
+    ZSquareBase() {
+        let base = new Decimal(1.3);
+        
+        // ADD
+        base = base.plus(tmp.s.ZSquareATB);
+        
+        // MULTIPLY
+     
+        
+        return base.pow(tmp.s.ZSquarePow);
+    },
+    ZSquarePow() {
+        let power = new Decimal(1);
+   
+        return power;
+    },
+
+ ZSquareEff() {
+        return Decimal.pow(tmp.s.ZSquareBase, player.s.axisZSquared.plus()).max(1).times(1);
+    }, 
 
 })
+

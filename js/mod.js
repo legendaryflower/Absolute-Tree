@@ -13,13 +13,22 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3.1",
+	num: "0.3.2",
 	name: "Beta",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v0.3.2 Beta</h3><br>
+- Added 1 new Multi Buyable.<br>
+- Added 2 more Smackery Alterations.<br>
+- Added Sanctuaries and Awakening Forms.<br>
+- Added squared forms of Axis.<br>
+- Added Celestial Upgrades.<br>
+- Added 7 new Session Buyables.<br>
+- Balanced up to 1,000 Celestials.<br>
+<br>
 <h3>v0.3.1 Beta</h3><br>
 - Added Smackeries.<br>
 - Added Therapy Sessions.<br>
@@ -112,7 +121,7 @@ function getPointGen() {
 	if (hasUpgrade("m",33)) gain = gain.pow(1.2)
 	if (inChallenge("a",21)) gain = gain.root(1e27)
 	if (player.a.unlocked) gain = gain.times(tmp.a.effect)
-	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
+	if (player.m.unlocked&&!hasUpgrade("s",111)) gain = gain.times(tmp.m.buyables[11].effect.first);
 	if (hasUpgrade("a",21)) gain = gain.times(tmp.a.buyables[12].effect.first);
 	if (hasUpgrade("a",31)) gain = gain.pow(upgradeEffect("a",31))
 
@@ -131,6 +140,12 @@ function getPointGen() {
 	if (hasUpgrade("s",36)) gain = gain.times(upgradeEffect("s",36))
 	if (hasUpgrade("s",56)) gain = gain.pow(1.3)
 	if (hasMilestone("sm",0)) gain = gain.pow(1.05)
+	if (hasUpgrade("s",103)) gain = gain.times(upgradeEffect("s",103))
+	if (hasUpgrade("s",104)) gain = gain.times(upgradeEffect("s",104))
+	if (hasUpgrade("s",105)) gain = gain.times(upgradeEffect("s",105))
+	if (hasUpgrade("s",107)) gain = gain.times(upgradeEffect("s",107))
+	if (hasMilestone("sm",2)) gain = gain.times(tmp.s.Buyable41Eff)
+	if (hasUpgrade("s",111)) gain = gain.times(buyableEffect("m",13).add(1).pow(64));
 	return gain
 }
 
@@ -139,12 +154,12 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 1 hour duration of Fox Music and got Smackery Level I.`,
+var displayThings = [`<span>Current Endgame: 1,000 Celestials`,
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.s.durationFox.gte(3600)&&player.sm.points.gte(1)
+	return player.s.celestial.gte(1000)
 }
 
 
