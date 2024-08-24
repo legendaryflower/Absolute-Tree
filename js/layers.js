@@ -468,7 +468,7 @@ currencyLayer: "n",
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(data.cost) + " multi points\n\
-                Amount: " + player[this.layer].buyables[this.id] + "+"+ tmp[this.layer].buyables[this.id].freeLvls+"\n\
+                Amount: " + player[this.layer].buyables[this.id] + "+"+ format(data.freeLvls)+"\n\
                Points gain is multiplied by " + format(data.effect.first) + "x. "
             },
             effect(x) { // Effects of owning x of the items, x is a decimal
@@ -505,7 +505,7 @@ currencyLayer: "n",
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(data.cost) + " multi points\n\
-                Amount: " + player[this.layer].buyables[this.id] + "+" + tmp[this.layer].buyables[this.id].freeLvls+"\n\
+                Amount: " + player[this.layer].buyables[this.id] + "+" + format(data.freeLvls)+"\n\
                Multi points gain is multiplied by " + format(data.effect.first) + "x. "
             },
             effect(x) { // Effects of owning x of the items, x is a decimal
@@ -1654,40 +1654,40 @@ player.a.time = new Decimal(1)
         0: {
             requirementDescription: "2 Absolute Points",
             effectDescription: "Keep Multi Upgrades on reset.",
-            done() { return player.a.points.gte(2)&&!hasUpgrade("aP",13)&&!player.aM.unlocked  },
-            unlocked() { return !hasUpgrade("aP",13)&&!player.aM.unlocked }
+            done() { return (player.a.points.gte(2))&&!hasUpgrade("aP",13)  },
+            unlocked() { return player.a.unlocked||!hasUpgrade("aP",13)}
         },
         1: {
             requirementDescription: "3 Absolute Points",
             effectDescription: "Automate the first 3 Multi Buyables.",
-            done() { return player.a.points.gte(3)&&!hasUpgrade("aP",13)&&!player.aM.unlocked  },
+            done() { return (player.a.points.gte(3))&&!hasUpgrade("aP",13)  },
             toggles: [
                 ["m","auto"],
               ],
-              unlocked() { return !hasUpgrade("aP",13)&&!player.aM.unlocked }
+            unlocked() { return player.a.unlocked||!hasUpgrade("aP",13) }
         },
         2: {
             requirementDescription: "5 Absolute Points",
             effectDescription: "Unlock Challenges.",
-            done() { return player.a.points.gte(5)&&!hasUpgrade("aP",13)&&!player.aM.unlocked },
-            unlocked() { return !hasUpgrade("aP",13)&&!player.aM.unlocked }
+            done() { return (player.a.points.gte(5))&&!hasUpgrade("aP",13)},
+          unlocked() { return player.a.unlocked||!hasUpgrade("aP",13) }
 
         },
         3: {
             requirementDescription: "8 Absolute Points",
             effectDescription: "Gain 100% of Multi Points per second.",
-            done() { return player.a.points.gte(8)&&!hasUpgrade("aP",13)&&!player.aM.unlocked  },
-            unlocked() { return !hasUpgrade("aP",13)&&!player.aM.unlocked }
+            done() { return (player.a.points.gte(8))&&!hasUpgrade("aP",13) },
+          unlocked() { return player.a.unlocked||!hasUpgrade("aP",13) }
 
         },
         4: {
             requirementDescription: "10 Absolute Points",
             effectDescription: "Automate the next 1 Multi Buyable and unlock Upgrades.",
-            done() { return player.a.points.gte(10)&&!hasUpgrade("aP",13)&&!player.aM.unlocked  },
+            done() { return (player.a.points.gte(10))&&!hasUpgrade("aP",13)  },
             toggles: [
                 ["m","auto2"],
               ],
-              unlocked() { return !hasUpgrade("aP",13)&&!player.aM.unlocked }
+            unlocked() { return player.a.unlocked||!hasUpgrade("aP",13)}
 
         }
        

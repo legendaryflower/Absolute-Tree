@@ -14,14 +14,20 @@ let modInfo = {
 // Set your version in num and name
 let VERSION = {
 	num: "0.3.3",
-	name: "Beta",
+	name: "Beta Hotfix",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
 <h3>v0.3.3 Beta</h3><br>
-<small><i>Major change.</i></small><br>
+
+
+<b>Hotfixes:</b><br>
+- Fixed a bug with Absolute Milestones obtaining.<br>
+- Made the free levels amount of Points and Multi Points buyables less chunky. (too much zeros).<br>
+- Fixed a bug where you can get the You there? achievement anytime without actually unlocking Stabverse.<br><br>
+<b>Major changes:</b><br>
 - Fixed a bug within purchasing any Axis Squared buyables.<br>
 - Added 1 new Normal Tree Layer.<br>
 - Added Apotheic Tree Layers.<br>

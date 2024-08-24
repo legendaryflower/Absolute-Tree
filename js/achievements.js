@@ -356,7 +356,7 @@ addLayer("ach", {
         },
         103: {
             name: "You there?",
-            done() { return player.aperdinal.stabs.gte(player.aperdinal.points)},
+            done() { return player.aperdinal.stabs.gte(player.aperdinal.points)&&hasUpgrade("aperdinal",14)},
             tooltip: "Have more Stabs than Aperdinal Points.",
            unlocked() {return player.aperdinal.total.gte(1)},
         },
