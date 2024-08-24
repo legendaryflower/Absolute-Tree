@@ -68,7 +68,6 @@ function getNextAt(layer, canMax=false, useType = null) {
 	} else {
 		return decimalZero
 	}}
-
 function softcap(value, cap, power = 0.5) {
 	if (value.lte(cap)) return value
 	else

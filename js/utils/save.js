@@ -18,7 +18,7 @@ function startPlayerBase() {
 		timePlayed: 0,
 		keepGoing: false,
 		hasNaN: false,
-
+       grad: true,
 		points: modInfo.initialStartPoints,
 		subtabs: {},
 		lastSafeTab: (readData(layoutInfo.showTree) ? "none" : layoutInfo.startTab)
@@ -246,7 +246,8 @@ function NaNcheck(data) {
 			if (!NaNalert) {
 				clearInterval(interval);
 				NaNalert = true;
-				alert("NaN detected. Please have a talk with the author and they will fix it.")
+				alert("NaN detected. Please have a talk with the author and they will fix it. NaNed data: "+data+".")
+			
 				return
 			}
 		}

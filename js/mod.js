@@ -3,7 +3,7 @@ let modInfo = {
 	id: "AbsoluteTree",
 	author: "RTLF2024",
 	pointsName: "points",
-	modFiles: ["layers.js", "tree.js"],
+	modFiles: ["layers.js", "tree.js", "achievements.js", "apotheicLayers.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,13 +13,30 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3.2",
+	num: "0.3.3",
 	name: "Beta",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v0.3.3 Beta</h3><br>
+<small><i>Major change.</i></small><br>
+- Fixed a bug within purchasing any Axis Squared buyables.<br>
+- Added 1 new Normal Tree Layer.<br>
+- Added Apotheic Tree Layers.<br>
+- After resetting for Session layer for first time, Free Multi Points now gives free levels to Multi Points (buyable).<br>
+- Added TPS (Ticks per second) counter below endgame text.<br>
+- Added QoL tooltips to some upgrades.<br>
+- Added 1 more Absolute Buyable.<br>
+- Added 2 more Absolute Upgrades.<br>
+- Added 3 new Session Upgrades.<br>
+- Changed the NaN message to display what caused the NaN bug (Bugged at moment!).<br>
+- Added a message after reaching the endgame. The message is below the TPS counter.<br>
+- Added Achievements. Right now they are cosmetic and do nothing.<br>
+- Balanced up to 1e31 Stabs.<br>
+- Changed the win message.<br>
+<br>
 <h3>v0.3.2 Beta</h3><br>
 - Added 1 new Multi Buyable.<br>
 - Added 2 more Smackery Alterations.<br>
@@ -91,7 +108,7 @@ let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.1 Alpha</h3><br>
 		- Release of the game.`
 
-let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
+let winText = `You have beaten the game... After the endgame, the game may not be balanced.`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
 // (The ones here are examples, all official functions are already taken care of)
@@ -146,6 +163,16 @@ function getPointGen() {
 	if (hasUpgrade("s",107)) gain = gain.times(upgradeEffect("s",107))
 	if (hasMilestone("sm",2)) gain = gain.times(tmp.s.Buyable41Eff)
 	if (hasUpgrade("s",111)) gain = gain.times(buyableEffect("m",13).add(1).pow(64));
+	if (player.ab.unlocked) gain = gain.times(tmp.ab.effect)
+	if (hasUpgrade("aP",13)) gain = gain.times(upgradeEffect("aP",13))
+
+	if (hasUpgrade("aM",12)) gain = gain.pow(upgradeEffect("aM",12))
+	if (hasUpgrade("aM",13)) gain = gain.times(tmp.aP.buyables[11].effect.first);
+	if (getBuyableAmount("ab",11).gte(4)) gain = gain.times(tmp.aT.effect)
+	if (gain.gte(1e200)&&player.s.unlocked) gain = gain.pow(0.333)
+	if (hasMilestone("aperdinal",0)) gain = gain.pow(1.5)
+	if (hasUpgrade("aperdinal",11)) gain = gain.pow(1.05)
+	if (hasUpgrade("aperdinal",21)) gain = gain.times(upgradeEffect("aperdinal",21))
 	return gain
 }
 
@@ -154,12 +181,16 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 1,000 Celestials`,
+var displayThings = [`<span>Current Endgame: 1e31 Stabs`,
+function() {return "TPS: "+formatWhole(player.ach.fps)},
+() => player.ab.unlocked&&!getBuyableAmount("ab",11).gte(4) ? '<small><font color="gray">To continue progressing, click/tap on the yellow side layer<br>and click on "Click here to switch to Apotheic Tree"</font></small>.' : '',
+() => getBuyableAmount("ab",11).gte(4) ? '<small><font color="red">Penalty: After reaching 1e200 Points, points gain will be raised ^0.333.' : '',
+() => player.aperdinal.stabs.gte(1e31) ? '<small><font color="purple">After endgame, the game may not be balanced.' : '',
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.s.celestial.gte(1000)
+	return player.aperdinal.stabs.gte(1e31)
 }
 
 

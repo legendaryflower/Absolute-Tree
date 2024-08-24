@@ -242,7 +242,13 @@ button > * {
 	position: absolute;
 	top: 0
 }
-
+.nodeRow {
+	display: flex !important;
+	flex-flow: row wrap;
+	justify-content: center;
+	align-items: center;
+	max-width: 100%;
+}
 .noBackground {
 	background: transparent !important;
 	background-image: none !important;
