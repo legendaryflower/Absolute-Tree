@@ -246,7 +246,7 @@ function NaNcheck(data) {
 			if (!NaNalert) {
 				clearInterval(interval);
 				NaNalert = true;
-				alert("NaN detected. Please have a talk with the author and they will fix it. NaNed data: "+data+".")
+				alert("NaN detected. Please have a talk with the author and they will fix it. NaNed data: "+item+".")
 			
 				return
 			}

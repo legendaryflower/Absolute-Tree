@@ -3,7 +3,7 @@ let modInfo = {
 	id: "AbsoluteTree",
 	author: "RTLF2024",
 	pointsName: "points",
-	modFiles: ["layers.js", "tree.js", "achievements.js", "apotheicLayers.js"],
+	modFiles: ["layers.js", "tree.js", "achievements.js", "apotheicLayers.js", "lore.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,13 +13,24 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3.3",
-	name: "Beta Hotfix",
+	num: "0.3.4",
+	name: "Lani-Loli",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v0.3.4 (Lani-Loli)</h3><br>
+- Added "Iron" layer.<br>
+- Added Quantum Masks.<br>
+- Reworked a lot of content.<br>
+- Added Tactics.<br>
+- Fixed Nacho Intubatiers tab that aren't supposed to appear when Apotheic Dimensions 22 isn't purchased.<br>
+- Added Exponent Tree.<br>
+- Added Lani-Loli (Kos currently).<br>
+- Added Quantum Upgrades.<br>
+- Balanced up to having 'g' purchased.<br>
+<br>
 <h3>v0.3.3 Beta</h3><br>
 
 
@@ -32,7 +43,7 @@ let changelog = `<h1>Changelog:</h1><br>
 - Added 1 new Normal Tree Layer.<br>
 - Added Apotheic Tree Layers.<br>
 - After resetting for Session layer for first time, Free Multi Points now gives free levels to Multi Points (buyable).<br>
-- Added TPS (Ticks per second) counter below endgame text.<br>
+- Added TPS (Ticks per second) counter below endgame reach text.<br>
 - Added QoL tooltips to some upgrades.<br>
 - Added 1 more Absolute Buyable.<br>
 - Added 2 more Absolute Upgrades.<br>
@@ -140,26 +151,32 @@ function getPointGen() {
 	if (hasUpgrade("m",12)) gain = gain.times(upgradeEffect("m",12))
 	if (hasUpgrade("m",13)) gain = gain.times(upgradeEffect("m",13))
 	if (hasUpgrade("m",15)) gain = gain.times(upgradeEffect("m",15))
-	if (hasUpgrade("a",12)) gain = gain.times(upgradeEffect("a",12))
+	if (hasUpgrade("a",12)) gain = gain.pow(upgradeEffect("a",12))
 	if (hasUpgrade("m",33)) gain = gain.pow(1.2)
+	if (hasUpgrade("m",57)) gain = gain.pow(1.05)
 	if (inChallenge("a",21)) gain = gain.root(1e27)
+	if (hasAchievement("ach",21)) gain = gain.pow(1.2)
 	if (player.a.unlocked) gain = gain.times(tmp.a.effect)
-	if (player.m.unlocked&&!hasUpgrade("s",111)) gain = gain.times(tmp.m.buyables[11].effect.first);
+	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
 	if (hasUpgrade("a",21)) gain = gain.times(tmp.a.buyables[12].effect.first);
 	if (hasUpgrade("a",31)) gain = gain.pow(upgradeEffect("a",31))
 
 	if (player.n.unlocked) gain = gain.times(tmp.n.buyables[11].effect.first);
 	if (hasUpgrade("n",11)) gain = gain.times(upgradeEffect("n",11));
-    if (getClickableState('n', 12)) gain = gain.pow(1.2)
+ 
 	if (inChallenge("a",32)) gain = gain.pow(0.08)
-	if (hasUpgrade("a",36)) gain = gain.pow(tmp.n.buyables[12].effect.first);
+	if (hasUpgrade("a",35)) gain = gain.pow(tmp.n.buyables[12].effect.first);
 	if (hasUpgrade("n",16)) gain = gain.times(upgradeEffect("n",16));
 	if (hasUpgrade("n",23)) gain = gain.times(upgradeEffect("n",23));
-	if (player.s.unlocked) gain = gain.times(tmp.s.effect)
 	
-	if (hasUpgrade("s",15)) gain = gain.times(upgradeEffect("s",15))
 
-	if (hasUpgrade("s",23)) gain = gain.div(tmp.s.theraEffect)
+	if (hasAchievement("ach",34)) gain = gain.times(tmp.m.buyables[23].effect.first)
+	if (hasAchievement("ach",55)) gain = gain.pow(1.01)
+	if (hasUpgrade("m",55)) gain = gain.pow(1.11)
+	if (hasUpgrade("s",15)) gain = gain.times(upgradeEffect("s",15))
+	if (hasUpgrade("m",31)) gain = gain.pow(upgradeEffect("m",31))
+	if (hasUpgrade("s",23)&&!hasAchievement("ach",62)) gain = gain.div(tmp.s.theraEffect)
+	if (hasAchievement("ach",63)) gain = gain.pow(Decimal.pow(1.005, player.s.makeraxisZ))
 	if (hasUpgrade("s",36)) gain = gain.times(upgradeEffect("s",36))
 	if (hasUpgrade("s",56)) gain = gain.pow(1.3)
 	if (hasMilestone("sm",0)) gain = gain.pow(1.05)
@@ -168,17 +185,29 @@ function getPointGen() {
 	if (hasUpgrade("s",105)) gain = gain.times(upgradeEffect("s",105))
 	if (hasUpgrade("s",107)) gain = gain.times(upgradeEffect("s",107))
 	if (hasMilestone("sm",2)) gain = gain.times(tmp.s.Buyable41Eff)
-	if (hasUpgrade("s",111)) gain = gain.times(buyableEffect("m",13).add(1).pow(64));
+
 	if (player.ab.unlocked) gain = gain.times(tmp.ab.effect)
 	if (hasUpgrade("aP",13)) gain = gain.times(upgradeEffect("aP",13))
-
+	if (hasUpgrade("aP",21)) gain = powExp(gain,1.01)
+	if (hasUpgrade("a",47)) gain = powExp(gain,1.001)
+	if (hasUpgrade("aP",25)) gain = gain.pow(1.05)
+	if (hasUpgrade("m",44)) gain = gain.times(tmp.m.buyables[22].effect.first);
 	if (hasUpgrade("aM",12)) gain = gain.pow(upgradeEffect("aM",12))
+	if (hasUpgrade("aD",25)) gain = gain.times(upgradeEffect("aD",25))
+	if (hasUpgrade("aD",34)) gain = gain.pow(1.01)
 	if (hasUpgrade("aM",13)) gain = gain.times(tmp.aP.buyables[11].effect.first);
 	if (getBuyableAmount("ab",11).gte(4)) gain = gain.times(tmp.aT.effect)
-	if (gain.gte(1e200)&&player.s.unlocked) gain = gain.pow(0.333)
-	if (hasMilestone("aperdinal",0)) gain = gain.pow(1.5)
-	if (hasUpgrade("aperdinal",11)) gain = gain.pow(1.05)
+
+	
+	if (hasMilestone("aperdinal",0)) gain = gain.pow(1.1)
+	if (hasUpgrade("aperdinal",11)) gain = gain.pow(1.005)
+	if (hasMilestone("aperdinal",10)) gain = powExp(gain,1.001)
 	if (hasUpgrade("aperdinal",21)) gain = gain.times(upgradeEffect("aperdinal",21))
+	if (hasUpgrade("aperdinal",85)) gain = gain.pow(1.01)
+	if (hasUpgrade("aN",11)) gain = gain.pow(tmp.aperdinal.tosKosEff)
+	if (hasUpgrade("aN",11)) gain = gain.times(upgradeEffect("aN",11))
+	if (hasAchievement("ach",122)) gain = powExp(gain,1.001)
+	if (gain.gte("1e30000")) return new Decimal("1e30000")
 	return gain
 }
 
@@ -187,16 +216,16 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 1e31 Stabs`,
+var displayThings = [`<span>Current Endgame: 'g' Purchased.`,
 function() {return "TPS: "+formatWhole(player.ach.fps)},
 () => player.ab.unlocked&&!getBuyableAmount("ab",11).gte(4) ? '<small><font color="gray">To continue progressing, click/tap on the yellow side layer<br>and click on "Click here to switch to Apotheic Tree"</font></small>.' : '',
-() => getBuyableAmount("ab",11).gte(4) ? '<small><font color="red">Penalty: After reaching 1e200 Points, points gain will be raised ^0.333.' : '',
-() => player.aperdinal.stabs.gte(1e31) ? '<small><font color="purple">After endgame, the game may not be balanced.' : '',
+() => hasMilestone("aperdinal",0)&&!hasUpgrade("aN",13) ? '<small><font color="gray">There is lore about Aperdinal layer, to view click/tap on the yellow side layer<br>and click on "Aperdinality Lore"</font></small>.' : '',
+() => hasUpgrade("aN",13) ? '<small><font color="purple">After endgame, the game may not be balanced.' : '',
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.aperdinal.stabs.gte(1e31)
+	return hasUpgrade("aN",13)
 }
 
 

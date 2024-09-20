@@ -101,6 +101,22 @@ function formatTime(s) {
 	}
 }
 
+function formatDistance(mm) {
+	
+    var dist = format(mm % 10) + "mm"
+    if (mm >= 10) dist = formatWhole(Math.floor(mm / 10) % 100) + " cm"
+    if (mm >= 1000) dist = formatWhole(Math.floor(mm / 1000) % 1000) + " m"
+    if (mm >= 1000000) dist = formatWhole(Math.floor(mm / 1000000) % 1000) + " km"
+    if (mm >= 1e9) dist = formatWhole(Math.floor(mm / 1e9) % 1000) + " Mm"
+    if (mm >= 1e12) dist = formatWhole(Math.floor(mm / 1e12) % 1000) + " Gm"
+    if (mm >= 1e15) dist = formatWhole(Math.floor(mm / 1e15) % 9460) + " Tm"
+    if (mm >= 9.46e18) dist = formatWhole(Math.floor(mm / 9.46e18)) + " ly"
+    if (mm >= 3.08e19) dist = formatWhole(Math.floor(mm / 3.08e19)) + " pc"
+    if (mm >= 8.7978e29) dist = formatWhole(Math.floor(mm / 8.7978e29)) + " obversable universe diameters"
+    return dist
+	}
+
+
 function toPlaces(x, precision, maxAccepted) {
     x = new Decimal(x)
     let result = x.toStringWithDecimalPlaces(precision)

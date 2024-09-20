@@ -9,6 +9,7 @@ addLayer("m", {
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
+
     }},
     color: "purple",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
@@ -29,22 +30,24 @@ addLayer("m", {
 
         if (hasUpgrade("m",14)) mult = mult.times(upgradeEffect("m",14))
         if (hasUpgrade("m",16)) mult = mult.times(upgradeEffect("m",16))
-        if (hasUpgrade("m",17)&&!hasUpgrade("s",111)) mult = mult.times(tmp.m.buyables[12].effect.first);
+        if (hasUpgrade("m",17)) mult = mult.times(tmp.m.buyables[12].effect.first);
         if (hasUpgrade("a",11)) mult = mult.times(tmp.a.buyables[11].effect.first);
         if (hasUpgrade("m",21)) mult = mult.times(upgradeEffect("m",21))
+        if (hasAchievement("ach",15)) mult = mult.times(1.2)
         if (hasChallenge("a",12)) mult = mult.times(challengeEffect("a",12))
-        if (inChallenge("a",21)) mult = mult.sqrt(player.a.time)
+        if (inChallenge("a",21)) mult = mult.sqrt()
         if (player.u.unlocked) mult = mult.times(tmp.u.effect)
         if (player.n.unlocked) mult = mult.times(tmp.n.buyables[11].effect.first);
         if (hasUpgrade("n",11)) mult = mult.times(upgradeEffect("n",11));
         if (hasUpgrade("a",44)) mult = mult.times(upgradeEffect("a",44))
-        if (player.s.unlocked) mult = mult.times(tmp.s.effect)
+       
         if (hasUpgrade("s",13)) mult = mult.times(upgradeEffect("s",13))
         if (hasUpgrade("s",24)) mult = mult.times(upgradeEffect("s",24))
         if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) mult = mult.pow(0.8)
         if (hasUpgrade("s",111)) mult = mult.pow(1.11)
-        if (hasUpgrade("s",111)) mult = mult.times(buyableEffect("m",14).add(1).pow(88));
-        if (player.ab.unlocked) mult = mult.times(tmp.ab.effect)
+        if (hasUpgrade("m",35)) mult = mult.times(4)
+
+      if (hasMilestone("ab",1)) mult = mult.times(Decimal.pow(1.5, player.s.points.max(1).log10()))
         if (getBuyableAmount("aP", 11).gte(1)) mult = mult.times(tmp.aP.buyables[11].effect.first)
         if (getBuyableAmount("ab",11).gte(4)) mult = mult.times(tmp.aT.effect)
         return mult
@@ -55,17 +58,38 @@ addLayer("m", {
         let exp = new Decimal(1)
       
         if (hasUpgrade("m",22)) exp = exp.add(upgradeEffect("m",22))
+
+        if (hasUpgrade("a",24)) exp = exp.add(upgradeEffect("a",24))
+
+        if (hasUpgrade("m",25)) exp = exp.times(upgradeEffect("m",25))
+        if (hasUpgrade("a",22)) exp = exp.add(0.05)
+        if (hasUpgrade("m",56)) exp = exp.add(1)
+        if (hasUpgrade("m",46)) exp = exp.add(upgradeEffect("m",46))
         if (hasUpgrade("s",11)) exp = exp.add(0.01)
+        if (hasAchievement("ach",35)) exp = exp.add(0.15)
         if (inChallenge("a",32)) exp = exp.pow(0.5)
         return exp;
     },
+    update(diff) {
+        if (player.ab.unlocked) player.devSpeed = tmp.m.devSpeedFact
+  
+      },
 
+      devSpeedFact() {
+   let fact = new Decimal(1)
+  if (hasMilestone("ab",2)) fact = fact.add(Decimal.add(0.0001).times(player.m.points.root(2e4)).min(tmp.ab.milestones[2].cap))
+  if (hasMilestone("aperdinal",1)) fact = fact.times(1.1)
+   return fact;
+ 
+      },
     softcap: new Decimal(1e20),
     softcapPower() {let power = new Decimal(0.333)
-        if (player.m.points.gte("1e5350")&&!player.s.unlocked) return new Decimal(0.1)
+        if (player.m.points.gte(1e70)) power = power.sub(0.025)
+        if (player.m.points.gte("1e420")) power = power.sub(0.003)
+
         if (hasUpgrade("a",37)) return new Decimal(0.35125)
 
-        if (player.m.points.gte("1e1600")&&!player.s.unlocked) power = power.div(player.m.points.add(2).log10().add(1).log10())
+   
         if (hasUpgrade("s",111)) return new Decimal(0.333)
         return power;
     },
@@ -93,19 +117,24 @@ addLayer("m", {
      
             setBuyableAmount("m",14,tmp.m.buyables[14].canAfford?player.m.points.div(10000).log(28).floor().add(1):getBuyableAmount("m",14)) 
           }
+      
           if (hasUpgrade("s",112)) {
      
-            setBuyableAmount("m",21,tmp.m.buyables[21].canAfford?player.m.points.div("1e410").log(100).floor().add(1):getBuyableAmount("m",21)) 
+            setBuyableAmount("m",21,tmp.m.buyables[21].canAfford?player.m.points.div("1e39600").log("1e500").floor().add(1):getBuyableAmount("m",21)) 
           }
+        
       },
-      passiveGeneration() { return (hasMilestone("a", 3)||player.s.unlocked)?1:0 },
+      passiveGeneration() { return (hasUpgrade("m",42))?1:0 },
+
     doReset(resettingLayer) {
         let keep = [];
     
         if (hasMilestone("a", 0)) keep.push("upgrades")
+        if (hasMilestone("n", 0)) keep.push("buyables")
         if (hasUpgrade("s",14)) keep.push("upgrades")
         if (layers[resettingLayer].row > this.row) layerDataReset("m", keep)
     },
+ 
     layerShown(){return player.aN.tree == "normal"},
     tabFormat: {
         "Buyables": {
@@ -144,7 +173,7 @@ addLayer("m", {
             description: "Points boost their own gain.",
             cost: new Decimal(1),
             cap() { let cap = new Decimal(1e7)
- if (hasUpgrade("a",21)) cap = cap.times(1.05)
+
  if (inChallenge("a",32)) cap = cap.div(275)
  if (hasUpgrade("n",31)) cap = cap.times(upgradeEffect("n",31))
                 return cap; },
@@ -166,7 +195,7 @@ addLayer("m", {
             description: "Multi points multiply Points gain.",
             cost: new Decimal(10),
             cap() { let cap = new Decimal(1e21)
-                if (hasUpgrade("a",21)) cap = cap.times(1.05)
+               
                 if (inChallenge("a",32)) cap = cap.div(275)
                 return cap; },
             
@@ -175,19 +204,20 @@ addLayer("m", {
                if (inChallenge("a",11)) return new Decimal(1)
           
                 let eff = player.m.points.plus(1).pow(0.3)
-              
+               let softcap1 = new Decimal(1e21)
+
                 if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
-                if (eff.gte(1e10)) eff = eff.div(1e10).log2().plus(1e10)
-                if (eff.gte(1e13)) eff = eff.div(1e13).log10().plus(1e13)
-                if (eff.gte(1e16)) eff = eff.div(1e16).log10().plus(1e16)
-                if (eff.gte(1e20)) eff = eff.div(1e20).log10().log10().log10().plus(1e20)
-              
+               
+             
+
+                 if (eff.gte(softcap1)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap1)).pow(3/6)).mul(softcap1)
+                 
             if (hasUpgrade("m",23)) eff = eff.times(upgradeEffect("m",23))
          
                 return eff;
             },
             
-            effectDisplay() { return format(tmp.m.upgrades[13].effect)+"x"+(tmp.m.upgrades[13].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
+            effectDisplay() { return format(tmp.m.upgrades[13].effect)+"x"+(tmp.m.upgrades[13].effect.gte(tmp.m.upgrades[this.id].cap)?" (SOFTCAPPED)":"") },
             unlocked() {return hasUpgrade("m",12)},
         },
         14: {
@@ -259,8 +289,8 @@ addLayer("m", {
             title: "Multy",
             description: "Multi points boost their own gain.",
             cost: new Decimal(1000),
-            cap() { let cap = new Decimal(1e6)
-                if (hasUpgrade("a",21)) cap = cap.times(1.05)
+            cap() { let cap = new Decimal(1e5)
+               
                 if (inChallenge("a",32)) cap = cap.div(275)
                 if (hasUpgrade("aP",17)) cap = cap.times(50)
                 return cap; },
@@ -278,31 +308,35 @@ addLayer("m", {
             effectDisplay() { return format(tmp.m.upgrades[21].effect)+"x"+(tmp.m.upgrades[21].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
         },
         22: {
-            title: "Multipotenint",
+            title: "Multipotent",
             description: "Multi Point's exponent is added based on Points",
             cost: new Decimal(1500),
-            cap() { let cap = new Decimal(5)
-                if (hasUpgrade("a",21)) cap = cap.times(1.05)
+            cap() { let cap = new Decimal(1)
+               
                 if (inChallenge("a",32)) cap = cap.div(275)
                 return cap; },
             unlocked() {return hasUpgrade("m",21)},
             effect() {
                 
               
-                let eff = player.points.plus(0.005).pow(0.01).min(tmp.m.upgrades[this.id].cap);;
-              
+                let eff = player.points.add(1).log10().sqrt().div(hasUpgrade("m",41) ? 15 : 25).times(1)
+                let softcap1 = new Decimal(1)
+           
+                if (eff.gte(softcap1)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap1)).pow(5.9/6)).mul(softcap1)
+               if (hasUpgrade("m",26)) eff = eff.add(upgradeEffect("m",26))
                 if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
                 return eff;
             },
             
-            effectDisplay() { return "+"+format(tmp.m.upgrades[22].effect)+(tmp.m.upgrades[22].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
+            effectDisplay() { return "+"+format(tmp.m.upgrades[22].effect)+(tmp.m.upgrades[22].effect.gte(tmp.m.upgrades[this.id].cap)?" (SOFTCAPPED)":"") },
         },
         23: {
             title: "Multi-multi Points",
             description: "<b>Multipoints</b> upgrade is stronger based on Multi Points.",
-            cost: new Decimal(1e11),
+            cost: new Decimal(2500),
             cap() { let cap = new Decimal(1e8)
-                if (hasUpgrade("a",21)) cap = cap.times(1.05)
+                if (hasUpgrade("m",45)) cap = cap.pow(upgradeEffect("m",45))
+               
                 if (inChallenge("a",32)) cap = cap.div(275)
                 return cap; },
             unlocked() {return hasUpgrade("m",22)},
@@ -311,7 +345,9 @@ addLayer("m", {
               
                 let eff = player.m.points.plus(1).pow(0.1).min(tmp.m.upgrades[this.id].cap);;
 
-       
+                let softcap1 = new Decimal(1e9)
+           
+                if (eff.gte(softcap1)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap1)).pow(5.5/6)).mul(softcap1)
                 if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
         
                 return eff;
@@ -321,41 +357,62 @@ addLayer("m", {
         },
         24: {
             title: "Self-upgrading",
-            description: "Boost <b>Upgraded Points</b> and <b>Upgraded Multi Points</b> basted on Absolute Points.",
-            cost: new Decimal(1e29),
-           
-            unlocked() {return hasMilestone("a",1)&&hasUpgrade("m",23)},
+            description: "Boost <b>Upgraded Points</b> and <b>Upgraded Multi Points</b> based on Multi Points.",
+            cost: new Decimal(10000),
+            cap() { let cap = new Decimal(6.66e66)
+
+                return cap; },
+            
+            unlocked() {return hasUpgrade("m",23)},
+            effect() {
+                
+                let softcap1 = new Decimal(6.66e66)
+                let eff = player.m.points.plus(1).pow(0.35);
+                if (eff.gte(softcap1)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap1)).pow(3/6)).mul(softcap1)
+                if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
+                return eff;
+            },
+            
+            effectDisplay() { return format(tmp.m.upgrades[24].effect)+"x"+(tmp.m.upgrades[24].effect.gte(tmp.m.upgrades[this.id].cap)?" (SOFTCAPPED)":"") },
+        },
+        25: {
+            title: "Continuum Drift",
+            description: "Absolute Points multiply Multi Point's exponent",
+            cost: new Decimal(2.5e30),
             effect() {
                 
               
-                let eff = player.a.points.plus(1).pow(0.75);
+                let eff = player.a.points.plus(1).pow(0.01);
 
                 if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
                 return eff;
             },
             
-            effectDisplay() { return format(tmp.m.upgrades[24].effect)+"x" },
-        },
-        25: {
-            title: "Continuum Drift",
-            description: "Absolute's effect base is added by 0.05.",
-            cost: new Decimal(2.5e30),
-           
-            unlocked() {return hasUpgrade("m",24)},
+            effectDisplay() { return format(tmp.m.upgrades[25].effect)+"x" },
+            unlocked() {return hasUpgrade("m",24)&&player.a.unlocked},
         },
         26: {
             title: "Miracle Points",
-            description: "Reduce the cost of Multi Points buyable by 15%.",
-            cost: new Decimal(7.5e31),
-           
-            unlocked() {return player.m.points.gte(5e31)||hasUpgrade("m",26)&&hasUpgrade("m",25)},
+            description: "Multipotent's effect is added based on Points.",
+            cost: new Decimal(2e31),
+            effect() {
+                
+              
+                let eff = player.points.add(1).log10().sqrt().div(85).times(1)
+
+
+                return eff;
+            },
+            
+            effectDisplay() { return "+"+format(tmp.m.upgrades[26].effect) },
+            unlocked() {return player.a.points.gte(4)||hasUpgrade("m",26)&&hasUpgrade("m",25)},
         },
         27: {
             title: "Absolute Divider",
-            description: "Divide the cost of Absolute Points based on Multi points. Unlock a new buyable.",
+            description: "Divide the cost of Absolute Points based on Multi points.",
             cost: new Decimal(1e32),
            
-            unlocked() {return (hasUpgrade("m",26)) && !player.s.unlocked},
+            unlocked() {return hasUpgrade("m",26)},
             effect() {
                 
               
@@ -374,24 +431,33 @@ addLayer("m", {
         },
         31: {
             title: "Panda-Cola Biscuits",
-            description: "Absolute's effect base is added by your Multi Points (at a reduced rate)",
+            description: "Multi Points raise Points gain.",
             cost: new Decimal(2.5e33),
-           
-            unlocked() {return hasUpgrade("m",27)&&hasChallenge("a",11)},
+           cap() {let cap = new Decimal(1.7)
+        if (hasUpgrade("a",31)) cap = cap.add(0.1)
+        if (hasUpgrade("a",33)) cap = cap.add(0.1)
+        if (hasUpgrade("m",52)) cap = cap.add(0.05)
+        if (hasAchievement("ach",35)) cap = cap.add(0.01)
+        if (getClickableState('n', 12)) cap = cap.plus(0.05)
+        if (getClickableState('n', 13)) cap = cap.plus(0.1)
+        return cap;},
+            unlocked() {return hasUpgrade("m",27)},
             effect() {
                 
               
-                let eff = player.m.points.add(1).log10().sqrt().div(15).times(1);
+                let eff = player.m.points.add(1).tetrate(0.0005).min(tmp.m.upgrades[31].cap);
+
+
                 if (inChallenge("a",12)) eff = eff.div(tmp.a.upgradeNerfChallenge)
         
                 return eff;
             },
             
-            effectDisplay() { return "+"+format(tmp.m.upgrades[31].effect) },
+            effectDisplay() { return "^"+format(tmp.m.upgrades[31].effect)+(tmp.m.upgrades[31].effect.gte(tmp.m.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
         },
         32: {
             title: "Multiverse Drift",
-            description: "Reduce the cost of Points buyable by 31.5%.",
+            description: "Absolute Points cost base is divided by 1.18.",
             cost: new Decimal(5e34),
            
             unlocked() {return hasUpgrade("m",31)},
@@ -409,17 +475,17 @@ addLayer("m", {
         34: {
             title: "Tampered Powers",
             description: "<b>Absolute Divider</b>'s upgrade is squared.",
-            cost: new Decimal(1e44),
+            cost: new Decimal(1e46),
            
             unlocked() {return hasUpgrade("m",33)},
            
         },
         35: {
             title: "Spactical Multi",
-            description: "Multiply the base effect of Absolute by 4.",
-            cost: new Decimal(5e45),
+            description: "Multiply Multi Points multi by 4.",
+            cost: new Decimal(5e48),
            
-            unlocked() {return (player.a.points.gte(6)||hasUpgrade("m",35)&&hasUpgrade("m",34))&&!player.ab.unlocked},
+            unlocked() {return (player.a.points.gte(6)||hasUpgrade("m",35)&&hasUpgrade("m",34))},
            
         },
         36: {
@@ -427,12 +493,12 @@ addLayer("m", {
             description: "Absolute divides its own requirement.",
             cost: new Decimal(1e80),
            
-            unlocked() {return (player.a.points.gte(7)||hasUpgrade("m",36)&&hasUpgrade("m",35))&&!player.ab.unlocked},
+            unlocked() {return (player.a.points.gte(7)||hasUpgrade("m",36)&&hasUpgrade("m",35))},
             effect() {
                 
               
                 let eff = player.a.points.plus(1).pow(0.085);
-
+  if (hasUpgrade("m",47)) eff = eff.pow(600)
         
                 return eff;
             },
@@ -448,22 +514,171 @@ currencyDisplayName: "nursery points",
 currencyInternalName: "points",
 currencyLayer: "n",
 
-        },	 
+        },	
+        41: {
+            title: "Omnipotent",
+            description: "Multipotient's formula is better.",
+            cost: new Decimal(1e54),
+           
+            unlocked() {return hasChallenge("a",11)},
+          tooltip() {return "sqrt(log10(Points+1))/25 → sqrt(log10(Points+1))/15"},
+        },
+        42: {
+            title: "Forgived Multiples",
+            description: "Gain 100% Multi Points/sec.",
+            cost: new Decimal(1e90),
+           
+            unlocked() {return hasUpgrade("m",41)},
+     
+        },
+        43: {
+            title: "Crone-cronerice",
+            description: "Thumbcorn is 5% efficient.",
+            cost: new Decimal(1e130),
+           
+            unlocked() {return hasUpgrade("m",42)},
+     
+        },
+        44: {
+            title: "Fightpointed",
+            description: "Unlock a new buyable.",
+            cost: new Decimal(1e235),
+           
+            unlocked() {return hasUpgrade("m",43)},
+     
+        },
+        45: {
+            title: "Bulldog Puffers",
+            description: "Multi-multi points hardcap is raised based on Absolute Points.",
+            cost: new Decimal(1e237),
+           
+            unlocked() {return hasUpgrade("m",44)},
+            effect() {
+                
+              
+                let eff = player.a.points.plus(1).pow(0.075);
+
+                if (hasUpgrade("m",53)) eff = eff.pow(1.3)
+                return eff;
+            },
+            
+            effectDisplay() { return "^"+format(tmp.m.upgrades[45].effect) },
+        },
+        46: {
+            title: "Stross",
+            description: "Multi Points exponent is added by your Points.",
+            cost: new Decimal(1e300),
+           
+            unlocked() {return hasUpgrade("m",45)},
+            effect() {
+                
+              
+                let eff = player.points.add(1).log10().sqrt().div(125).times(1)
+         if (hasUpgrade("a",21)) eff = eff.plus(0.015)
+         if (hasUpgrade("a",26)) eff = eff.times(1.22)
+         if (hasUpgrade("a",27)) eff = eff.times(3.5)
+         if (hasUpgrade("m",51)) eff = eff.plus(0.11)
+         if (hasUpgrade("m",52)) eff = eff.times(1.2)
+         if (hasUpgrade("m",54)) eff = eff.plus(upgradeEffect("m",54))
+         if (getClickableState('n', 11)) eff = eff.plus(0.1)
+         if (getClickableState('n', 12)) eff = eff.plus(0.05)
+                return eff;
+            },
+            
+            effectDisplay() { return "+"+format(tmp.m.upgrades[46].effect) },
+        },
+        47: {
+            title: "Fancy Points",
+            description: "Impossible Duke's effect is raised ^600.",
+            cost: new Decimal("1e372"),
+           
+            unlocked() {return hasUpgrade("m",46)},
+         
+        },
+       51: {
+            title: "Hamber WORD",
+            description: "Stross effect+0.11",
+            cost: new Decimal("1e1268"),
+           
+            unlocked() {return hasUpgrade("m",47)&&getBuyableAmount("a",22).gte(2)},
+         
+        },
+        52: {
+            title: "Hamber WORDLY",
+            description: "Panda-Cola Biscuits hardcap start+0.05. Stross effect is multiplied by 1.2.",
+            cost: new Decimal("1e1302"),
+           
+            unlocked() {return hasUpgrade("m",51)},
+         
+        },
+        53: {
+            title: "Hamber WORDLIER",
+            description: "Bulldog Puffers effect^1.3.",
+            cost: new Decimal("1e1468"),
+           
+            unlocked() {return hasUpgrade("m",52)},
+         
+        },
+        54: {
+            title: "Hamber WORDLIEST",
+            description: "Stross effect is added by your Points.",
+            cost: new Decimal("1e1474"),
+           
+            unlocked() {return hasUpgrade("m",53)},
+            effect() {
+                
+              
+                let eff = player.points.add(1).log10().sqrt().div(64).times(1)
+   
+                return eff;
+            },
+            
+            effectDisplay() { return "+"+format(tmp.m.upgrades[54].effect) },
+        },
+        55: {
+            title: "Hamber WORDLIESTIER",
+            description: "Points gain is raised ^1.11.",
+            cost: new Decimal("1e1656"),
+           
+            unlocked() {return hasUpgrade("m",54)},
+       
+        },
+        56: {
+            title: "Hamber WORDLIESTIEST",
+            description: "Multi Points exp+1",
+            cost: new Decimal("1e2105"),
+           
+            unlocked() {return hasUpgrade("m",55)},
+       
+        },
+        57: {
+            title: "Hamber WORDLIESTIESTIEST",
+            description: "Points gain is raised 1.05.",
+            cost: new Decimal("1e36000"),
+           
+            unlocked() {return hasUpgrade("m",56)&&hasMilestone("sm",1)},
+       
+        },
     },
     buyables: {
+     capEff11() {let cap = new Decimal(4.14e139)
+    if (player.s.unlocked) cap = cap.times(tmp.s.effect)
+    return cap;},
+    capEff12() {let cap = new Decimal(1.20e267)
+        if (player.s.unlocked) cap = cap.times(tmp.s.effect)
+        return cap;},
         11: {
             costScaling() {let cost =  new Decimal(1)
                 if (hasUpgrade("s",111)) return new Decimal(1)
-               if(!hasUpgrade("a",37)) if (player.m.buyables[11].gte(1100)) cost = cost.add(0.25)
-               if(!hasUpgrade("a",37))if (player.m.buyables[11].gte(tmp.m.softcapBuyables)) cost = cost.add(0.75)
-               if(!hasUpgrade("a",37)) if (inChallenge("a",22)) cost = cost.times(tmp.a.costScalingStartHarsh)
+   
+      if (inChallenge("a",22)) cost = cost.times(tmp.a.costScalingStartHarsh)
         return cost;
                  },
             freeLvls() {let free = new Decimal(0)
             if (player.a.unlocked) free = free.plus(buyableEffect("m",13))
             return free;},
         title() {return "Points"},
-            cost(x) { return new Decimal(1).mul(new Decimal(6).pow(x).pow(hasUpgrade("a",37) ? 2 : 1)).times(hasUpgrade("m",32) ? 0.695 : 1).pow(tmp[this.layer].buyables[this.id].costScaling) },
+            cost(x) { return new Decimal(1).mul(new Decimal(6).pow(x)).pow(tmp[this.layer].buyables[this.id].costScaling) },
         
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
@@ -473,9 +688,10 @@ currencyLayer: "n",
             },
             effect(x) { // Effects of owning x of the items, x is a decimal
                 let eff = {}
-                if (x.gte(0)) eff.first = Decimal.pow(1.1, x.pow(1.16)).plus(tmp.m.buyables[this.id].freeLvls).div(hasUpgrade("a",37) ? 1e5 : 1)
+                if (x.gte(0)) eff.first = Decimal.pow(1.1, x.pow(1.16)).plus(tmp.m.buyables[this.id].freeLvls)
                 else eff.first = Decimal.pow(1/50, x.times(-1).pow(1.0))
-            
+              
+                if (x.gte(1100)) eff.first = new Decimal(tmp.m.buyables.capEff11)
                 if (x.gte(0)) eff.second = x.pow(0.8)
                 else eff.second = x.times(-1).pow(0.8).times(-1)
                 return eff;
@@ -485,21 +701,22 @@ currencyLayer: "n",
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
-             unlocked() {return !hasUpgrade("s",111)}
-           
+    
+           purchaseLimit () {let limit = new Decimal(1100)
+        
+        return limit;},
         },
         12: {
             freeLvls() {let free = new Decimal(0)
-                if (hasUpgrade("m",27)||player.s.unlocked) free = free.plus(buyableEffect("m",14))
+                if (player.a.unlocked) free = free.plus(buyableEffect("m",14))
                 return free;},
                 costScaling() {let cost =  new Decimal(1)
                     if (hasUpgrade("s",111)) return new Decimal(1)
-                    if(!hasUpgrade("a",37)||player.s.unlocked)    if (player.m.buyables[12].gte(1100)) cost = cost.add(0.25)
-                    if(!hasUpgrade("a",37)||player.s.unlocked)   if (player.m.buyables[11].gte(tmp.m.softcapBuyables)) cost = cost.add(0.75)
-                    if(!hasUpgrade("a",37))   if (inChallenge("a",22)) cost = cost.times(tmp.a.costScalingStartHarsh)
+
+             if (inChallenge("a",22)) cost = cost.times(tmp.a.costScalingStartHarsh)
             return cost;
                      },
-            cost(x) { return new Decimal(5).mul(new Decimal(6).pow(x).pow(hasUpgrade("a",37) ? 2 : 1)).times(hasUpgrade("m",26) ? 0.85 : 1).pow(tmp[this.layer].buyables[this.id].costScaling) },
+            cost(x) { return new Decimal(5).mul(new Decimal(6).pow(x)).pow(tmp[this.layer].buyables[this.id].costScaling) },
             title() { return "Multi Points" },
            
             display() { // Everything else displayed in the buyable button after the title
@@ -510,20 +727,25 @@ currencyLayer: "n",
             },
             effect(x) { // Effects of owning x of the items, x is a decimal
                 let eff = {}
-                if (x.gte(0)) eff.first = Decimal.pow(1.2, x.pow(1.16)).plus(tmp.m.buyables[this.id].freeLvls.times(1e6)).div(hasUpgrade("a",37) ? 1e5 : 1)
+                if (x.gte(0)) eff.first = Decimal.pow(1.2, x.pow(1.16)).plus(tmp.m.buyables[this.id].freeLvls.times(5))
                 else eff.first = Decimal.pow(1/50, x.times(-1).pow(1.0))
-            
+
+                if (x.gte(1100)) eff.first = new Decimal(tmp.m.buyables.capEff12)
                 if (x.gte(0)) eff.second = x.pow(0.8)
                 else eff.second = x.times(-1).pow(0.8).times(-1)
                 return eff;
             },
             canAfford() { return player[this.layer].points.gte(this.cost()) },
             buy() {
-                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
                 player[this.layer].points = player[this.layer].points.sub(this.cost())
+                setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+
      
             },
-            unlocked() {return hasUpgrade("m",17)&&!hasUpgrade("s",111)},
+            unlocked() {return hasUpgrade("m",17)},
+            purchaseLimit () {let limit = new Decimal(1100)
+        
+                return limit;},
 
         },
         13: {
@@ -595,7 +817,7 @@ currencyLayer: "n",
         21: {
           
         title() {return "Unhackable Sessions"},
-            cost(x) { return new Decimal("1e410").mul(new Decimal(100).pow(x))},
+            cost(x) { return new Decimal("1e39600").mul(new Decimal("1e500").pow(x))},
         
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
@@ -620,6 +842,68 @@ currencyLayer: "n",
              unlocked() {return hasUpgrade("s",112)}
            
         },
+        22: {
+          
+            title() {return "Spectral Points"},
+                cost(x) { return new Decimal("1e235").mul(new Decimal(1e3).pow(x))},
+            
+                display() { // Everything else displayed in the buyable button after the title
+                    let data = tmp[this.layer].buyables[this.id]
+                    return "Cost: " + format(data.cost) + " multi points\n\
+                    Amount: " + player[this.layer].buyables[this.id] + " / 8\n\
+                   Multiply Points gain by " + format(data.effect.first) + "x. "
+                },
+                effect(x) { // Effects of owning x of the items, x is a decimal
+                    let eff = {}
+                    if (x.gte(0)) eff.first = Decimal.pow(16, x)
+                    else eff.first = Decimal.pow(1/50, x.times(-1).pow(1.0))
+                
+                    if (x.gte(0)) eff.second = x.pow(0.8)
+                    else eff.second = x.times(-1).pow(0.8).times(-1)
+                    return eff;
+                },
+                canAfford() { return player[this.layer].points.gte(this.cost()) },
+                buy() {
+                    player[this.layer].points = player[this.layer].points.sub(this.cost())
+                    setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                },
+                purchaseLimit() {let limit = new Decimal(8)
+                
+                return limit;},
+                 unlocked() {return hasUpgrade("m",44)}
+               
+            },
+            23: {
+          
+                title() {return "Spectrality"},
+                    cost(x) { return new Decimal("1e1191").mul(new Decimal(5).pow(x))},
+                
+                    display() { // Everything else displayed in the buyable button after the title
+                        let data = tmp[this.layer].buyables[this.id]
+                        return "Cost: " + format(data.cost) + " multi points\n\
+                        Amount: " + player[this.layer].buyables[this.id] + " / 20\n\
+                        Ultra Points cost is divided by /" + format(data.effect.first) + ". and multiply Points gain by the same amount."
+                    },
+                    effect(x) { // Effects of owning x of the items, x is a decimal
+                        let eff = {}
+                        if (x.gte(0)) eff.first = Decimal.pow(2, x)
+                        else eff.first = Decimal.pow(1/50, x.times(-1).pow(1.0))
+                    
+                        if (x.gte(0)) eff.second = x.pow(0.8)
+                        else eff.second = x.times(-1).pow(0.8).times(-1)
+                        return eff;
+                    },
+                    canAfford() { return player[this.layer].points.gte(this.cost()) },
+                    buy() {
+                        player[this.layer].points = player[this.layer].points.sub(this.cost())
+                        setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+                    },
+                    purchaseLimit() {let limit = new Decimal(20)
+                    
+                    return limit;},
+                     unlocked() {return hasAchievement("ach",34)}
+                   
+                },
     },
 })
 
@@ -633,7 +917,7 @@ addLayer("a", {
         time: new Decimal(1),
     }},
     color: "red",
-    requires() { let req = new Decimal(1e15) 
+    requires() { let req = new Decimal(1e26) 
     if (hasUpgrade("aP",13)) return new Decimal(1e127)
     return req;}, // Can be a function that takes requirement increases into account
     resource: "absolute points", // Name of prestige currency
@@ -641,7 +925,13 @@ addLayer("a", {
     baseAmount() {return player.points}, // Get the current amount of baseResource
     type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 3, // Prestige currency exponent
-    base: 1.75,
+    base() {let base = new Decimal(1e6)
+    if (player.a.points.gte(2)) base = base.div(50000)
+    if (player.a.points.gte(3)) base = base.div(6)
+    if (hasUpgrade("m",32)) base = base.div(1.18)
+    if (hasUpgrade("a",13)) base = base.div(1.16)
+        return base;
+    },
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
 
@@ -658,13 +948,13 @@ addLayer("a", {
         return exp;
     },
     resetsNothing() {return hasMilestone("n",1)||hasMilestone("aperdinal",1)},
-    autoPrestige() {return hasMilestone("n",1)||hasMilestone("aperdinal",3)},
+    autoPrestige() {return hasMilestone("n",1)},
    branches: ["m"],
     row: 1, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
         {
             key:"a", description: "A: Reset for absolute points", onPress() {
-                if (canReset(this.layer)&&!player.s.unlocked)
+                if (canReset(this.layer))
                     doReset(this.layer)
             }
         },
@@ -675,8 +965,7 @@ addLayer("a", {
     
     addToBase() {
         let base = new Decimal(0);
-     if (hasUpgrade("m",25)) base = base.add(0.05)
-     if (hasUpgrade("m",31)) base = base.add(upgradeEffect("m",31))
+   
      if (hasUpgrade("a",16)) base = base.add(upgradeEffect("a",16))
         return base;
     },
@@ -687,6 +976,7 @@ addLayer("a", {
         if (hasUpgrade("n", 12)) keep.push("challenges")
         if (hasMilestone("n",0)) keep.push("upgrades")
         if (hasMilestone("n",0)) keep.push("buyables")
+        if (hasMilestone("n",2)) keep.push("milestones")
         if (hasUpgrade("aP",13)) keep.push("upgrades")
         if (hasUpgrade("aP",13)) keep.push("buyables")
         if (hasUpgrade("aP",13)) keep.push("milestones")
@@ -709,7 +999,7 @@ addLayer("a", {
     },
     power() {
         let power = new Decimal(1);
-     if (hasUpgrade("m",35)) power = power.times(4)
+        if (hasUpgrade("a",11)) power = power.add(0.1).pow(1.5)
         return power;
     },
     upgradeNerfChallenge(x=challengeCompletions("a", 12)) {
@@ -722,17 +1012,21 @@ addLayer("a", {
       
         let nerf = Decimal.add(2.2, Decimal.pow(x, 4).div(6))
        if (hasUpgrade("a",37)) nerf = nerf.div(tmp.a.buyables[31].effect.first)
+       if (hasAchievement("ach",34)) nerf = nerf.times(0.5)
         return nerf;
     },
 
     effect() {
         return Decimal.pow(tmp.a.effectBase, player.a.points.plus()).max(1).times(1);
     },
-    layerShown(){return ((hasUpgrade("m",23) || player.a.unlocked ) && !player.s.unlocked||hasUpgrade("aP",13))&&player.aN.tree == "normal"},
+    layerShown(){return (hasUpgrade("m",23) || player.a.unlocked )&&player.aN.tree == "normal"},
     cheapPow() {
         let pow = new Decimal(1);
-        
-        return pow;
+        if (hasUpgrade("a",46)) pow = pow.times(upgradeEffect("a",46))
+        if (hasUpgrade("aP",23)) pow = pow.pow(1.5)
+        if (hasUpgrade("aP",24)) pow = pow.times(tmp.u.buyables[12].effect.first)
+        if (hasUpgrade("aperdinal",47)) pow = pow.times(upgradeEffect("aperdinal",47))
+                return pow;
     },
     tabFormat: {
         "Main": {
@@ -773,17 +1067,17 @@ addLayer("a", {
     buyables: {
         11: {
           costScaling() {let cost =  new Decimal(1)
-        if (player.a.buyables[11].gte(6)) cost = cost.add(0.25)
-        if (player.a.buyables[11].gte(8)) cost = cost.add(1)
-        if (player.a.buyables[11].gte(9)) cost = cost.add(0.15)
-        if (player.a.buyables[11].gte(10)) cost = cost.add(0.95)
-        if (player.a.buyables[11].gte(16)) cost = cost.add(4)
 
-        if (player.a.buyables[this.id].gte(18)) cost = cost.add(17)
-
+  if (getBuyableAmount("a",11).gte(7)) cost = cost.add(player.a.buyables[11].add(1).div(50))
         if (hasUpgrade("a",13)) cost = cost.times(0.75)
         if (hasChallenge("a",21)) cost = cost.times(0.6666)
 return cost;
+         },
+         baseCost() {
+let base = new Decimal(1e50).times(1)
+
+return base;
+
          },
             cost(x) { return new Decimal(1e100).mul(new Decimal(1e50).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
             title() { return "Baker's Wheat" },
@@ -791,7 +1085,7 @@ return cost;
             display() { // Everything else displayed in the buyable button after the title
                 let data = tmp[this.layer].buyables[this.id]
                 return "Cost: " + format(data.cost) + " multi points\n\
-                Amount: " + player[this.layer].buyables[this.id] + "\n\
+                Amount: " + player[this.layer].buyables[this.id] + " / "+(data.purchaseLimit)+"\n\
                Multiply Multi points gain by " + format(data.effect.first) + "x. "
             },
             effect(x) { // Effects of owning x of the items, x is a decimal
@@ -808,24 +1102,21 @@ return cost;
                 player.m.points = player.m.points.sub(this.cost())
                 setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
             },
-          unlocked() {return !hasUpgrade("aP",14)}
+            purchaseLimit() {let limit = new Decimal(7)
+            if (hasUpgrade("a",33)) limit = limit.add(1)
+            return limit;},
+      
            
         },
         12: {
             costScaling() {let cost =  new Decimal(1)
                 if (hasUpgrade("a",22)) cost = cost.times(0.8);
-          if (player.a.buyables[12].gte(6)) cost = cost.add(0.25)
-          if (player.a.buyables[12].gte(8)) cost = cost.add(1)
-          if (player.a.buyables[12].gte(9)) cost = cost.add(0.15)
-          if (player.a.buyables[12].gte(10)) cost = cost.add(0.95)
-          if (player.a.buyables[this.id].gte(9)) cost = cost.add(3.5)
-
-          if (player.a.buyables[this.id].gte(16)) cost = cost.add(17)
+       
 
           
   return cost;
            },
-              cost(x) { return new Decimal("1e898").mul(new Decimal(1e25).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              cost(x) { return new Decimal("1e432").mul(new Decimal(1e44).pow(x.pow(x.add(1))).pow(tmp[this.layer].buyables[this.id].costScaling)) },
               title() { return "Elderwort" },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -854,17 +1145,13 @@ return cost;
           13: {
             costScaling() {let cost =  new Decimal(1)
           
-          if (player.a.buyables[13].gte(4)) cost = cost.add(0.5)
-          if (player.a.buyables[13].gte(8)) cost = cost.add(1)
-          if (player.a.buyables[13].gte(9)) cost = cost.add(0.15)
-          if (player.a.buyables[13].gte(10)) cost = cost.add(0.95)
-          if (player.a.buyables[this.id].gte(6)) cost = cost.add(3.8)
-
-          if (player.a.buyables[this.id].gte(10)) cost = cost.add(17)
-
+          if (player.a.buyables[13].gte(4)) cost = cost.add(3)
+          if (player.a.buyables[13].gte(5)) cost = cost.add(player.a.buyables[13].add(1))
+          if (player.a.buyables[13].gte(9)) cost = cost.add(player.a.buyables[13].add(1).pow(1.11))
+          if (player.a.buyables[13].gte(60)) cost = cost.add(player.a.buyables[13].add(1).pow(1.3))
   return cost;
            },
-              cost(x) { return new Decimal("1e975").mul(new Decimal(1e50).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              cost(x) { return new Decimal("1e663").mul(new Decimal(15).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
               title() { return "White Mildew" },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -875,7 +1162,7 @@ return cost;
               },
               effect(x) { // Effects of owning x of the items, x is a decimal
                   let eff = {}
-                  if (x.gte(0)) eff.first = Decimal.pow(1.4, x.pow(1.6531))
+                  if (x.gte(0)) eff.first = Decimal.pow(1.005, x.pow(1.002))
                   else eff.first = Decimal.pow(1/52, x.times(-1).pow(1.0))
               
                   if (x.gte(0)) eff.second = x.pow(0.8)
@@ -892,31 +1179,25 @@ return cost;
           },
           21: {
             costScaling() {let cost =  new Decimal(1)
-                if (hasUpgrade("a",45)) cost = cost.times(0.9)
+
                 if (hasUpgrade("n",12)) cost = cost.min(upgradeEffect("n",12))
-                if (player.a.buyables[this.id].gte(4)) cost = cost.add(0.05)
-                if (player.a.buyables[this.id].gte(7)) cost = cost.add(2)
-                if (player.a.buyables[this.id].gte(10)) cost = cost.add(4.3)
-                if (player.a.buyables[this.id].gte(12)) cost = cost.add(15)
-
-       
-                if (player.a.buyables[this.id].gte(18)) cost = cost.add(50)
-
-
+                if (player.a.buyables[21].gte(50)) cost = cost.add(player.a.buyables[21].add(0.01).pow(0.0005))
+                if (player.a.buyables[21].gte(55)) cost = cost.add(player.a.buyables[21].add(0.1).pow(0.05))
+                if (player.a.buyables[21].gte(75)) cost = cost.add(player.a.buyables[21].add(1).pow(0.05))
   return cost;
            },
-              cost(x) { return new Decimal("1e1131").pow(new Decimal(1.0015).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              cost(x) { return new Decimal("1e1187").pow(new Decimal(1.001).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
               title() { return "Squid Buyable 1" },
   
               display() { // Everything else displayed in the buyable button after the title
                   let data = tmp[this.layer].buyables[this.id]
                   return "Cost: " + format(data.cost) + " multi points\n\
-                  Amount: " + player[this.layer].buyables[this.id] + "\n\
-                 All upgrades of Chocoroot upgrade type is multiplied by " + format(data.effect.first) + "x. "
+                  Amount: " + player[this.layer].buyables[this.id] + " / 130\n\
+                 White Chocoroot effect is boosted by " + format(data.effect.first) + "x. "
               },
               effect(x) { // Effects of owning x of the items, x is a decimal
                   let eff = {}
-                  if (x.gte(0)) eff.first = Decimal.pow(1.45, x.pow(1.3))
+                  if (x.gte(0)) eff.first = Decimal.pow(1.008, x.pow(1.01))
                   else eff.first = Decimal.pow(1/45, x.times(-1).pow(1.0))
               
                   if (x.gte(0)) eff.second = x.pow(0.8)
@@ -928,22 +1209,23 @@ return cost;
                   player.m.points = player.m.points.sub(this.cost())
                   setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
               },
-              unlocked() { return hasUpgrade("a",32)}
+              unlocked() { return hasUpgrade("a",32)},
+              purchaseLimit: 130,
              
           },
           22: {
             costScaling() {let cost =  new Decimal(1)
-             
-                if (hasUpgrade("a",45)) cost = cost.times(0.9)
+                if (player.a.buyables[22].gte(25)) cost = cost.add(player.a.buyables[22].add(1).pow(0.5))
+
   return cost;
            },
-              cost(x) { return new Decimal("1e300").pow(new Decimal(2).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              cost(x) { return new Decimal("1e816").pow(new Decimal(1.0005).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
               title() { return "Squid Buyable 2" },
   
               display() { // Everything else displayed in the buyable button after the title
                   let data = tmp[this.layer].buyables[this.id]
                   return "Cost: " + format(data.cost) + " points\n\
-                  Amount: " + player[this.layer].buyables[this.id] + "\n\
+                  Amount: " + player[this.layer].buyables[this.id] + " / 130\n\
                  Golden Clover upgrade is multiplied by " + format(data.effect.first) + "x. "
               },
               effect(x) { // Effects of owning x of the items, x is a decimal
@@ -957,9 +1239,10 @@ return cost;
               },
               canAfford() { return player.points.gte(this.cost()) },
               buy() {
-                  player.m.points = player.points.sub(this.cost())
+                  player.points = player.points.sub(this.cost())
                   setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
               },
+              purchaseLimit: 130,
               unlocked() { return hasUpgrade("a",32)}
              
           },
@@ -969,7 +1252,7 @@ return cost;
 
   return cost;
            },
-              cost(x) { return new Decimal("1e500").pow(new Decimal(2.5).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              cost(x) { return new Decimal("1e1200").pow(new Decimal(1.3).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
               title() { return "Squid Buyable 3" },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -989,7 +1272,7 @@ return cost;
               },
               canAfford() { return player.points.gte(this.cost()) },
               buy() {
-                  player.m.points = player.points.sub(this.cost())
+                  player.points = player.points.sub(this.cost())
                   setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
               },
               unlocked() { return hasUpgrade("a",32)}
@@ -1010,7 +1293,7 @@ return cost;
 
   return cost;
            },
-              cost(x) { return new Decimal(1e18).pow(new Decimal(1.0525).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              cost(x) { return new Decimal(1e25).pow(new Decimal(1.0525).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
               title() { return "Queenbeet" },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -1038,10 +1321,11 @@ return cost;
           },
            41: {
             costScaling() {let cost =  new Decimal(1)
-               
+               if (getBuyableAmount("a",41).gte(108)) cost = cost.add(x.max(1).pow(1e-10))
+               if (getBuyableAmount("a",41).gte(113)) cost = cost.add(x.max(1).pow(1e-9))
   return cost;
            },
-              cost(x) { return new Decimal(1e6).mul(new Decimal(1750).pow(x)) },
+              cost(x) { return new Decimal(1e6).mul(new Decimal(1750).pow(x)).pow(this.costScaling()) },
               title() { return '<font color="red">Cheapcap I</font>' },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -1067,38 +1351,84 @@ return cost;
               unlocked() { return hasUpgrade("aP",14)},
               style: {'background-color':'white',},
           },
+          42: {
+            costScaling() {let cost =  new Decimal(1)
+               
+  return cost;
+           },
+              cost(x) { return new Decimal("1e700").mul(new Decimal(1e7).pow(x)) },
+              title() { return '<font color="orange">Cheapcap II</font>' },
+  
+              display() { // Everything else displayed in the buyable button after the title
+                  let data = tmp[this.layer].buyables[this.id]
+                  return "Cost: " + format(data.cost) + " apotheic points\n\
+                  Amount: " + player[this.layer].buyables[this.id] + "/16\n\
+                 Multiply Stabs gain by " + format(data.effect.first) + "x."
+              },
+              effect(x) { // Effects of owning x of the items, x is a decimal
+                  let eff = {}
+                  if (x.gte(0)) eff.first = Decimal.pow(1.3, x.pow(1.1))
+                  else eff.first = Decimal.pow(1/45, x.times(-1).pow(1.0))
+              
+                  if (x.gte(0)) eff.second = x.pow(0.8)
+                  else eff.second = x.times(-1).pow(0.8).times(-1)
+                  return eff;
+              },
+              canAfford() { return player.aP.points.gte(this.cost()) },
+              buy() {
+                  player.aP.points = player.aP.points.sub(this.cost())
+                  setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+              },
+              unlocked() { return hasUpgrade("aperdinal",57)},
+              style: {'background-color':'white',},
+              purchaseLimit:16,
+          },
 
     },
     upgrades: {
 			
         11: {
             title: "Baker's Wheat",
-            description: "Unlock 1 new Absolute Buyable.",
-            cost: new Decimal(10),
-         unlocked () {return hasMilestone("a",4)&&!hasUpgrade("aP",13)}
+            description: "Unlock 1 new Absolute Buyable. Absolute Point's effect is raised ^1.5.",
+            cost: new Decimal(1e98),
+            currencyDisplayName: "multi points",
+currencyInternalName: "points",
+currencyLayer: "m",
+         unlocked () {return hasMilestone("a",3)}
             
         },	
         12: {
             title: "Thumbcorn",
-            description: "Absolute Points multiply Points gain.",
-            cost: new Decimal(11),
-         unlocked () {return hasUpgrade("a",11)},
+            description: "Absolute Points raise Points gain.",
+            cost: new Decimal(1e100),
+         unlocked() {return hasUpgrade("a",11)},
+     
+         currencyDisplayName: "multi points",
+         currencyInternalName: "points",
+         currencyLayer: "m",
+         cap() {let cap = new Decimal(3.3)
+        
+            return cap;},
          effect() {
                 
               
-            let eff = player.a.points.plus(1).pow(0.5)
+            let eff = player.a.points.plus(1).pow(0.035)
+          
+            if (hasUpgrade("m",43)) eff = eff.times(1.05)
            if (hasUpgrade("a",15)) eff = eff.times(upgradeEffect("a",15))
-           if (hasUpgrade("a",25)) eff = eff.times(tmp.a.buyables[12].effect.first);
+           if (hasUpgrade("a",25)) eff = eff.times(tmp.a.buyables[13].effect.first);
+           if (eff.gte(3.3)) return new Decimal(3.3)
             return eff;
         },
+    
         
-        effectDisplay() { return format(tmp.a.upgrades[12].effect)+"x" },
+        effectDisplay() { return "^"+format(tmp.a.upgrades[12].effect)+(tmp.a.upgrades[12].effect.gte(tmp.a.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
             
         },	
         13: {
             title: "Cronerice",
-            description: "Reduce the scaling of Baker's Wheat buyable by 25%.",
-            cost: new Decimal("1e416"),
+            description: "Scaling of Bakers Wheat is 25% reduced. Absolute base req is divided by 1.16.",
+            cost: new Decimal("1e125"),
          unlocked () {return hasUpgrade("a",12)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1109,7 +1439,7 @@ currencyLayer: "m",
         14: {
             title: "Gildmillet",
             description: "Unlock a new non-repeatable challenge",
-            cost: new Decimal("1e545"),
+            cost: new Decimal("1e256"),
          unlocked () {return hasUpgrade("a",13)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1119,8 +1449,8 @@ currencyLayer: "m",
         },	
         15: {
             title: "Ordinary Clover",
-            description: "Each OoM^2 of Multi Points multiply <b>Thumbcorn</b>'s effect.",
-            cost: new Decimal("1e633"),
+            description: "Multi Points multiply <b>Thumbcorn</b>'s effect.",
+            cost: new Decimal("1e377"),
          unlocked () {return hasUpgrade("a",14)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1128,7 +1458,7 @@ currencyLayer: "m",
 effect() {
                 
               
-    let eff = player.m.points.add(2).log10().add(1).log10()
+    let eff = player.m.points.add(1).pow(0.00002)
 
     return eff;
 },
@@ -1140,7 +1470,7 @@ effectDisplay() { return format(tmp.a.upgrades[15].effect)+"x" },
         16: {
             title: "Golden Clover",
             description: "Points add to Absolute's effect base. Unlock Ultra Points",
-            cost: new Decimal("1e640"),
+            cost: new Decimal("1e410"),
          unlocked () {return hasUpgrade("a",15)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1148,7 +1478,7 @@ currencyLayer: "m",
 effect() {
                 
               
-    let eff = player.points.add(1).log10().sqrt().div(25).times(1);
+    let eff = player.points.add(1).log10().sqrt().div(55).times(1);
 	if (hasUpgrade("a",32)) eff = eff.times(tmp.a.buyables[22].effect.first);
     return eff;
 },
@@ -1160,7 +1490,7 @@ effectDisplay() { return "+"+format(tmp.a.upgrades[16].effect) },
         17: {
             title: "Shimmerlily",
             description: "<b>Antitrusted Multiverses</b> challenge is 10% less as lethal and unlock a new repeatable Challenge.",
-            cost: new Decimal("1e800"),
+            cost: new Decimal("1e422"),
          unlocked () {return hasUpgrade("a",16)&&player.u.unlocked},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1169,8 +1499,8 @@ currencyLayer: "m",
         },
          21: {
             title: "Elderwort",
-            description: "Extend the hardcap of Multi Upgrades by 5%. Unlock a new buyable.",
-            cost: new Decimal("1e805"),
+            description: "Stross effect+0.015, Unlock a new buyable.",
+            cost: new Decimal("1e424"),
          unlocked () {return hasUpgrade("a",17)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1179,8 +1509,8 @@ currencyLayer: "m",
         },	
         22: {
             title: "Bakeberry",
-            description: "<b>Antitrusted Multiverses</b> challenge goal is reduced by 80%, and the cost scaling for Elderwort buyable is reduced by 20%.",
-            cost: new Decimal("1e900"),
+            description: "<b>Antitrusted Multiverses</b> challenge goal is reduced by 80%, cost scaling for Elderwort buyable is reduced by 20% and Multi Points exp+0.05.",
+            cost: new Decimal("2.5e474"),
          unlocked () {return hasUpgrade("a",21)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1190,7 +1520,7 @@ currencyLayer: "m",
         23: {
             title: "Chocoroot",
             description: "Multi Points add to the Ultra Point's base effect.",
-            cost: new Decimal("1e204"),
+            cost: new Decimal("1e515"),
          unlocked () {return hasUpgrade("a",22)},
 currencyDisplayName: "points",
 currencyInternalName: "points",
@@ -1198,7 +1528,7 @@ effect() {
                 
               
     let eff = player.m.points.add(1).log10().sqrt().div(1.8).times(1);
-	if (hasUpgrade("a",32)) eff = eff.times(tmp.a.buyables[21].effect.first);
+	
     return eff;
 }, 
 
@@ -1208,8 +1538,8 @@ effectDisplay() { return "+"+format(tmp.a.upgrades[23].effect) },
         },	
         24: {
             title: "White Chocoroot",
-            description: "Absolute's effect also adds to the Ultra Point's base effect.",
-            cost: new Decimal("1e907"),
+            description: "Multi Points add to their own exponent.",
+            cost: new Decimal("1e521"),
          unlocked () {return hasUpgrade("a",23)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1217,8 +1547,8 @@ currencyLayer: "m",
 effect() {
                 
               
-    let eff = tmp.a.effect.plus(1).pow(0.09117)
-	if (hasUpgrade("a",32)) eff = eff.times(tmp.a.buyables[21].effect.first);
+    let eff = player.m.points.add(1).log10().sqrt().div(100).times(1);
+    if (hasUpgrade("a",32)) eff = eff.times(tmp.a.buyables[21].effect.first);
     return eff;
 },
 
@@ -1229,7 +1559,7 @@ effectDisplay() { return "+"+format(tmp.a.upgrades[24].effect) },
         25: {
             title: "White Mildew",
             description: "Unlock a new Buyable.",
-            cost: new Decimal("1e975"),
+            cost: new Decimal("1e660"),
          unlocked () {return hasUpgrade("a",24)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1238,8 +1568,8 @@ currencyLayer: "m",
         },	
         26: {
             title: "Brown Mold",
-            description: "Unlock a new challenge.",
-            cost: new Decimal("1e976"),
+            description: "Stross effect*1.22, Unlock a new challenge.",
+            cost: new Decimal("1e710"),
          unlocked () {return hasUpgrade("a",25)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1248,8 +1578,8 @@ currencyLayer: "m",
         },
         27: {
             title: "Meddleweed",
-            description: "Subtract the goal of Anti-Queens and Antitrusted Multiverse based on points.",
-            cost: new Decimal("1e1045"),
+            description: "Stross effect*3.5 , Subtract the goal of Anti-Queens and Antitrusted Multiverse based on points.",
+            cost: new Decimal("1e875"),
          unlocked () {return hasUpgrade("a",26)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1266,8 +1596,8 @@ effectDisplay() { return "-"+format(tmp.a.upgrades[27].effect) },
         },	
         31: {
             title: "Whiskerbloom",
-            description: "Raise the Points gain based on Ultra Points.",
-            cost: new Decimal("1e1117"),
+            description: "Panda-Cola Biscuits hardcap start+0.1, Raise the Points gain based on Ultra Points.",
+            cost: new Decimal("1e1069"),
          unlocked () {return hasUpgrade("a",27)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1276,8 +1606,8 @@ effect() {
                 
               
     let eff = player.u.points.plus(1).pow(0.03)
-    if (getClickableState('n', 11)) eff = eff.times(1.05)
-    if (hasChallenge("a",32)) eff =eff.times(1.2)
+
+ 
     return eff;
 },
 
@@ -1287,7 +1617,7 @@ effectDisplay() { return "^"+format(tmp.a.upgrades[31].effect) },
         32: {
             title: "Chimerose",
             description: "Unlock Squid Buyables.",
-            cost: new Decimal("1e1131"),
+            cost: new Decimal("1e1187"),
          unlocked () {return hasUpgrade("a",31)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1298,8 +1628,8 @@ currencyLayer: "m",
         
         33: {
             title: "Nursetulip",
-            description: "Unlock Nurses (layer).",
-            cost: new Decimal("1e1429"),
+            description: "Unlock Nurseries. You can purchase Baker's Wheat 1 more time and Panda-Cola Biscuits hardcap start+0.1.",
+            cost: new Decimal("1e2570"),
          unlocked () {return hasUpgrade("a",32)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1327,7 +1657,7 @@ currencyLayer: "n",
 effect() {
                 
               
-    let eff = player.points.plus(1).pow(0.009)
+    let eff = player.points.plus(1).pow(0.00009)
  
     return eff;
 },
@@ -1337,8 +1667,8 @@ effectDisplay() { return format(tmp.a.upgrades[35].effect)+"x" },
         },	 
         36: {
             title: "Keenmoss",
-            description: "Unlock Type I Nurseries",
-            cost: new Decimal(1e14),
+            description: "Nursery Points exp+0.25",
+            cost: new Decimal(3e9),
          unlocked () {return hasUpgrade("a",35)},
 currencyDisplayName: "nursery points",
 currencyInternalName: "points",
@@ -1347,8 +1677,8 @@ currencyLayer: "n",
         },	 
         37: {
             title: "Queenbeet",
-            description: "Remove the softcaps for all Multi Buyables, but they are 1e25x weaker and pow cost increases to 2. Unlock Queenbeet (buyable)",
-            cost: new Decimal(7.5e17),
+            description: "Unlock Queenbeet (buyable)",
+            cost: new Decimal(1e17),
          unlocked () {return hasUpgrade("a",36)},
 currencyDisplayName: "nursery points",
 currencyInternalName: "points",
@@ -1378,8 +1708,8 @@ currencyLayer: "n",
         },	 
         43: {
             title: "Crumbspore",
-            description: "Unlock Absol Perpetuals, Nursery Points gain is multiplied by 6.",
-            cost: new Decimal(1e49),
+            description: "You can now activate 2 Nurseries at a time. Unlock Absol Perpetuals, Nursery Points gain is multiplied by 6.",
+            cost: new Decimal(1e53),
          unlocked () {return hasUpgrade("a",42)&&getBuyableAmount("n",22).gte(1)},
 currencyDisplayName: "nursery points",
 currencyInternalName: "points",
@@ -1390,7 +1720,7 @@ currencyLayer: "n",
         44: {
             title: "Doughshroom",
             description: "Absol Perpetuals multiply Multi Points gain (Effect is magnified by your Points)",
-            cost: new Decimal(2.5e6),
+            cost: new Decimal(1e13),
          unlocked () {return hasUpgrade("n",33)},
 currencyDisplayName: "absol perpetuals",
 currencyInternalName: "absolPer",
@@ -1398,7 +1728,7 @@ currencyLayer: "n",
 effect() {
                 
               
-    let eff = player.n.absolPer.plus(1).pow(0.1).times(player.points.pow(0.02))
+    let eff = player.n.absolPer.plus(1).pow(0.01).times(player.points.pow(0.0002))
  
     return eff;
 },
@@ -1409,8 +1739,8 @@ effectDisplay() { return format(tmp.a.upgrades[44].effect)+"x" },
         },	 
         45: {
             title: "Glovemorel",
-            description: "Cost scalings for Squid Buyables are reduced by 10%.",
-            cost: new Decimal(3.5e77),
+            description: "Gain 5x more Absol Perpetuals.",
+            cost: new Decimal(1e160),
          unlocked () {return hasUpgrade("a",44)&&getBuyableAmount("n",21).gte(50)},
 currencyDisplayName: "nursery points",
 currencyInternalName: "points",
@@ -1418,6 +1748,36 @@ currencyLayer: "n",
 
 
         },	 
+        46: {
+            title: "Ultratoxin",
+            description: "Cheapcap Power is boosted.",
+            cost: new Decimal("1e14500"),
+ 
+         unlocked () {return hasUpgrade("a",107)},
+currencyDisplayName: "points",
+currencyInternalName: "points",
+effect() {
+                
+              
+    let eff = new Decimal(1.01)
+   if (hasUpgrade("aP",22)) eff = eff.times(upgradeEffect("aP",22))
+    return eff;
+},
+
+
+effectDisplay() { return format(tmp.a.upgrades[46].effect)+"x" },
+
+        },
+          47: {
+            title: "Alokkocated Cappers",
+            description: "Points gain is hatsuned to 1.001.",
+            cost: new Decimal("1e14505"),
+ 
+         unlocked () {return hasUpgrade("a",107)},
+currencyDisplayName: "points",
+currencyInternalName: "points",
+
+        },
         101: {
             title: "Cheapcap I",
             description: "Raise the Apotheic Points gain by 1.134",
@@ -1432,9 +1792,66 @@ currencyInternalName: "points",
         102: {
             title: "Cheapcap II",
             description: "Apothetic Points and Apothetic Mastery gain are both multiplied by 5.",
-            cost: new Decimal(1e154),
+            cost: new Decimal("1e10000"),
             canAfford() {return player.ab.unlocked},
          unlocked () {return hasUpgrade("a",101)||player.ab.unlocked},
+currencyDisplayName: "points",
+currencyInternalName: "points",
+
+
+        },
+        103: {
+            title: "Cheapcap III",
+            description: "Session's effect is improved.",
+            cost: new Decimal("1e11596"),
+            canAfford() {return player.aM.points.gte(1)},
+         unlocked () {return hasUpgrade("a",102)},
+currencyDisplayName: "points",
+currencyInternalName: "points",
+
+        },
+        104: {
+            title: "Cheapcap IV",
+            description: "Apeoblabla Point gain is 100x.",
+            cost: new Decimal("1e11702"),
+            canAfford() {return player.aM.points.gte(1)},
+         unlocked () {return hasUpgrade("a",103)},
+currencyDisplayName: "points",
+currencyInternalName: "points",
+
+
+        },
+        105: {
+            title: "Cheapcap V",
+            description: "Nursery Point softcap power is weakened.",
+            cost: new Decimal("1e11735"),
+            tooltip() {return "^0.001 → ^0.01"},
+            canAfford() {return player.aB2.points.gte(1)},
+         unlocked () {return hasUpgrade("a",104)},
+currencyDisplayName: "points",
+currencyInternalName: "points",
+
+
+        },
+        106: {
+            title: "Cheapcap VI",
+            description: "Sessions effect base is hatsune squared.",
+            cost: new Decimal("1e11790"),
+            
+           
+         unlocked () {return hasUpgrade("a",105)},
+currencyDisplayName: "points",
+currencyInternalName: "points",
+
+
+        },
+        107: {
+            title: "Cheapcap VII",
+            description: "You can purchase Type I nurseries 1 more time.",
+            cost: new Decimal("1e12210"),
+            
+           
+         unlocked () {return hasUpgrade("a",106)},
 currencyDisplayName: "points",
 currencyInternalName: "points",
 
@@ -1454,13 +1871,9 @@ currencyInternalName: "points",
               
             },
             onEnter() {
-player.points = new Decimal(0),
 
-player.m.points = new Decimal(0),
-player.m.best = new Decimal(0),
-player.m.total = new Decimal(0),
-player.a.time = new Decimal(1)
-
+   player.points = new Decimal(0)
+   player.m.points = new Decimal(0)
   if(!hasUpgrade("n",14)) player.m.upgrades = []
 
             },
@@ -1509,13 +1922,11 @@ goal() {
             rewardDisplay() { return format(tmp.a.challenges[12].rewardEffect)+"x to Multi Points gain." },
        
             onEnter() {
-player.points = new Decimal(0),
-player.m.points = new Decimal(0),
-player.m.best = new Decimal(0),
-player.m.total = new Decimal(0)
+
 
 if(!hasUpgrade("n",14)) player.m.upgrades = []
-
+player.points = new Decimal(0)
+player.m.points = new Decimal(0)
 player.a.time = new Decimal(1)
 
             },
@@ -1526,24 +1937,22 @@ player.a.time = new Decimal(1)
             name: "Flysquirrel",
            
             challengeDescription() {
-                return "Points gain is brought to the 1e27th root and Multi Point gain square roots overtime in this challenge. <br>Currently: Brought to the " +format(player.a.time)+"th square root."
+                return "Points gain is brought to the 1e27th root and Multi Point gain is square rooted."
        ;
             },
             currencyDisplayName: "multi points",
             currencyInternalName: "points",
             currencyLayer: "m",
           goal(){
-           return new Decimal(1e28);
+           return new Decimal(1e11);
                 
               
             },
             onEnter() {
-player.points = new Decimal(0),
-player.m.points = new Decimal(0),
-player.m.best = new Decimal(0),
-player.m.total = new Decimal(0)
-if(!hasUpgrade("n",14)) player.m.upgrades = []
 
+if(!hasUpgrade("n",14)) player.m.upgrades = []
+player.points = new Decimal(0)
+player.m.points = new Decimal(0)
 player.a.time = new Decimal(1)
 
             },
@@ -1576,7 +1985,7 @@ goal() {
                 if (comps.gte(5)) comps = comps.sub(2.5);
                 if (comps.gte(7)) comps = comps.times(2);
                 if (hasUpgrade("a",27)) comps = comps.sub(upgradeEffect("a",27))
-                return Decimal.pow(1e24, Decimal.pow(comps, 3)).times(1e250);
+                return Decimal.pow(1e24, Decimal.pow(comps, 3)).times(1e160);
             },
 
             rewardEffect() { 
@@ -1589,11 +1998,10 @@ goal() {
             rewardDisplay() { return "/"+format(tmp.a.challenges[22].rewardEffect)+" to Ultra Points requirement." },
        
             onEnter() {
-player.points = new Decimal(0),
-player.m.points = new Decimal(0),
-player.m.best = new Decimal(0),
-player.m.total = new Decimal(0)
+
 if(!hasUpgrade("n",14)) player.m.upgrades = []
+player.points = new Decimal(0)
+player.m.points = new Decimal(0)
 player.a.time = new Decimal(1)
 
             },
@@ -1613,11 +2021,10 @@ player.a.time = new Decimal(1)
               
             },
             onEnter() {
-player.points = new Decimal(0),
-player.m.points = new Decimal(0),
-player.m.best = new Decimal(0),
-player.m.total = new Decimal(0)
+
 if(!hasUpgrade("n",14)) player.m.upgrades = []
+player.points = new Decimal(0)
+player.m.points = new Decimal(0)
 player.a.time = new Decimal(1)
 
             },
@@ -1637,15 +2044,14 @@ player.a.time = new Decimal(1)
               
             },
             onEnter() {
-player.points = new Decimal(0),
-player.m.points = new Decimal(0),
-player.m.best = new Decimal(0),
-player.m.total = new Decimal(0)
+
 if(!hasUpgrade("n",14)) player.m.upgrades = []
+player.points = new Decimal(0)
+player.m.points = new Decimal(0)
 player.a.time = new Decimal(1)
 
             },
-            rewardDescription: "Whiskerbloom effect is multiplied by 1.2x.",
+            rewardDescription: "Whiskerbloom effect is multiplied by 1.05x.",
          unlocked() {return hasUpgrade("a",34)}
         },
     },
@@ -1673,17 +2079,11 @@ player.a.time = new Decimal(1)
           unlocked() { return player.a.unlocked||!hasUpgrade("aP",13) }
 
         },
+     
         3: {
             requirementDescription: "8 Absolute Points",
-            effectDescription: "Gain 100% of Multi Points per second.",
-            done() { return (player.a.points.gte(8))&&!hasUpgrade("aP",13) },
-          unlocked() { return player.a.unlocked||!hasUpgrade("aP",13) }
-
-        },
-        4: {
-            requirementDescription: "10 Absolute Points",
             effectDescription: "Automate the next 1 Multi Buyable and unlock Upgrades.",
-            done() { return (player.a.points.gte(10))&&!hasUpgrade("aP",13)  },
+            done() { return (player.a.points.gte(8))&&!hasUpgrade("aP",13)  },
             toggles: [
                 ["m","auto2"],
               ],
@@ -1704,7 +2104,7 @@ addLayer("u", {
         time: new Decimal(1),
     }},
     color: "blue",
-    requires: new Decimal("6.666e666"), // Can be a function that takes requirement increases into account
+    requires: new Decimal("1e422"), // Can be a function that takes requirement increases into account
     resource: "ultra points", // Name of prestige currency
     baseResource: "multi points", // Name of resource prestige is based on
     baseAmount() {return player.m.points}, // Get the current amount of baseResource
@@ -1717,6 +2117,7 @@ addLayer("u", {
 
 
      if (hasChallenge("a",22)) mult = mult.div(challengeEffect("a",22))
+     if (hasAchievement("ach",34)) mult = mult.div(tmp.m.buyables[23].effect.first)
      if (hasUpgrade("a",42)) mult = mult.div(tmp.n.buyables[13].effect.first)
         return mult
     },
@@ -1730,7 +2131,7 @@ addLayer("u", {
     hotkeys: [
         {
             key:"U", description: "U: Reset for ultra points", onPress() {
-                if (canReset(this.layer)&&!player.s.unlocked)
+                if (canReset(this.layer))
                     doReset(this.layer)
             }
         },
@@ -1744,7 +2145,7 @@ addLayer("u", {
     addToBase() {
         let base = new Decimal(0);
     if (hasUpgrade("a",23)) base= base.add(upgradeEffect("a",23))
-    if (hasUpgrade("a",24)) base= base.add(upgradeEffect("a",24))
+
         return base;
     },
     doReset(resettingLayer) {
@@ -1778,7 +2179,7 @@ addLayer("u", {
     effect() {
         return Decimal.pow(tmp.u.effectBase, player.u.points.plus()).max(1).times(1);
     },
-    layerShown(){return hasUpgrade("a",16)||player.u.unlocked&&!player.s.unlocked},
+    layerShown(){return (hasUpgrade("a",16)||player.u.unlocked)&&player.aN.tree == "normal"},
     tabFormat: {
         "Main": {
             buttonStyle() { return {'background-color': 'blue'} },
@@ -1811,7 +2212,7 @@ addLayer("u", {
 
 return cost;
          },
-            cost(x) { return new Decimal("1e800").mul(new Decimal(1e135).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+            cost(x) { return new Decimal("1e420").mul(new Decimal(1e200).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
             title() { return "Strength I" },
 
             display() { // Everything else displayed in the buyable button after the title
@@ -1837,9 +2238,44 @@ return cost;
 
             unlocked () {return (player.a.challenges[22]>=1)}
         },
+        12: {
+          
+              cost(x) { return new Decimal("1e84100").mul(new Decimal(1e100).pow(x)) },
+              title() { return "Strength II" },
+  
+              display() { // Everything else displayed in the buyable button after the title
+                  let data = tmp[this.layer].buyables[this.id]
+                  return "Cost: " + format(data.cost) + " multi points\n\
+                  Amount: " + player[this.layer].buyables[this.id] + "\n\
+                 Cheapcap Power is multiplied by " + format(data.effect.first) + "x. "
+              },
+              effect(x) { // Effects of owning x of the items, x is a decimal
+                  let eff = {}
+                  if (x.gte(0)) eff.first = Decimal.pow(1.01, x.pow(1.005))
+                  else eff.first = Decimal.pow(1/45, x.times(-1).pow(1.0))
+              
+                  if (x.gte(0)) eff.second = x.pow(0.8)
+                  else eff.second = x.times(-1).pow(0.8).times(-1)
+                  return eff;
+              },
+              canAfford() { return player.m.points.gte(this.cost()) },
+              buy() {
+                  player.m.points = player.m.points.sub(this.cost())
+                  setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
+              },
+  
+              unlocked () {return hasUpgrade("aP",24)}
+          },
       
         
     },
+    automate(){
+        if (hasUpgrade("aP",24)) {
+          setBuyableAmount("u",12,tmp.u.buyables[12].canAfford?player.m.points.div("1e84100").log(1e100).floor().add(1):getBuyableAmount("u",12))
+         
+          }
+        
+      },
 })
 addLayer("n", {
     name: "nurses", // This is optional, only used in a few places, If absent it just uses the layer id.
@@ -1857,15 +2293,15 @@ addLayer("n", {
         umvuthiUnl: false,
     }},
     color: "goldenrod",
-    requires() { let req = new Decimal("1e1431") 
-if (hasUpgrade("aD",34)) return new Decimal("1e661")
+    requires() { let req = new Decimal("1e2815") 
+
 return req;}, // Can be a function that takes requirement increases into account
     resource: "nursery points", // Name of prestige currency
     baseResource: "multi points", // Name of resource prestige is based on
     baseAmount() {return player.m.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
     exponent: 0.005, // Prestige currency exponent
-    passiveGeneration() { return (hasUpgrade("n", 24)||hasUpgrade("aperdinal",21))?1:0 },
+    passiveGeneration() { return (hasUpgrade("n", 24))?1:0 },
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
 
@@ -1879,19 +2315,37 @@ return req;}, // Can be a function that takes requirement increases into account
   if (hasUpgrade("n",22)) mult = mult.times(upgradeEffect("n",22))
   if (hasUpgrade("n",33)) mult = mult.times(upgradeEffect("n",33))
 
-  if (hasUpgrade("aperdinal",12)) mult = mult.pow(1.6)
+ 
   if (getBuyableAmount("n",41).gte(1)) mult =mult.times(tmp.n.buyables[41].effect.first)
+
+  if (hasUpgrade("aperdinal",45)) mult = mult.times(upgradeEffect("aperdinal",45))
+  if (hasUpgrade("aperdinal",51)) mult = mult.times(upgradeEffect("aperdinal",51))
+
+  if (hasUpgrade("aperdinal",67)) mult = mult.pow(1.5)
+  if (hasUpgrade("aperdinal",75)) mult = mult.times(tmp.aperdinal.buyables[32].effect.first)
         return mult
+    
 
 
     },
     update(diff) {
         if (hasUpgrade("n",25)) player.n.absolPer = player.n.absolPer.add(tmp.n.clickables[31].gain)
         if (hasUpgrade("n",25)) player.n.absolPerTotal = player.n.absolPerTotal.add(tmp.n.clickables[31].gain)
+        if (hasUpgrade("s", 14)) {
+          
+            if (layers.n.clickables[41].canClick()) layers.n.clickables[41].onClick();
+        }
+        if (hasUpgrade("s", 16)) {
+          
+            setClickableState(this.layer, 11, true)
+            setClickableState(this.layer, 12, true)
+            setClickableState(this.layer, 13, true)
+        }
       },
     
     gainExp() { // Calculate the exponent on main currency from bonuses
         let exp = new Decimal(1)
+        if (hasUpgrade("a",36)) exp = exp.add(0.25)
        if (hasUpgrade("m",37)) exp = exp.add(0.05)
        if (hasUpgrade("n",14)) exp = exp.add(upgradeEffect("n",14))
         return exp;
@@ -1900,13 +2354,13 @@ return req;}, // Can be a function that takes requirement increases into account
         mult = new Decimal(1)
        
         if (hasUpgrade("n", 15)) mult = mult.add(tmp.n.buyables[21].effect);
-        if (getClickableState('n', 13)) mult = mult.times(5)
+       
         return mult
     },
     softcap: new Decimal(1e175),
-    softcapPower() {let power = new Decimal(0.5)
+    softcapPower() {let power = new Decimal(0.001)
 
-     if (player.n.points.gte(1e175)) power = power.div(player.n.points.div(2))
+  if (hasUpgrade("a",105)) power = power.add(0.009)
   
         return power;
     },
@@ -1915,7 +2369,7 @@ return req;}, // Can be a function that takes requirement increases into account
     hotkeys: [
         {
             key:"n", description: "N: Reset for nursery points", onPress() {
-                if (canReset(this.layer)&&!player.s.unlocked)
+                if (canReset(this.layer))
                     doReset(this.layer)
             }
         },
@@ -1952,8 +2406,10 @@ return req;}, // Can be a function that takes requirement increases into account
     doReset(resettingLayer) {
         let keep = [];
     
-        if (hasUpgrade("aD",34)) keep.push("upgrades")
-        if (hasUpgrade("aD",34)) keep.push("buyables")
+        if (hasMilestone("s", 2)) keep.push("buyables")
+        if (hasMilestone("s",0)) keep.push("milestones")
+        if (hasMilestone("s",1)) keep.push("upgrades")
+     
     
         if (layers[resettingLayer].row > this.row) layerDataReset("n", keep)
     },
@@ -1971,10 +2427,16 @@ return req;}, // Can be a function that takes requirement increases into account
           
 
         },
-        
+        2: {
+            requirementDescription: "50 Total Nursey Points",
+            effectDescription: "Keep Absolute Milestones.",
+            done() { return player.n.total.gte(50) },
+          
+
+        },
        
     } ,
-    layerShown(){return ((hasUpgrade("a",33)||player.n.unlocked)&& !player.s.unlocked||hasUpgrade("aD",34))&&player.aN.tree == "normal"},
+    layerShown(){return (hasUpgrade("a",33)||player.n.unlocked)&&player.aN.tree == "normal"},
     microtabs: {
         stuff: {
             "Main": {
@@ -1998,11 +2460,14 @@ return req;}, // Can be a function that takes requirement increases into account
             },
            
             "Nurseries": {
-                unlocked: () => 	(!hasUpgrade("aD",34)),
+              
                 content: [
                 
                     ["clickable",21],
-                    ["display-text", () => "You can only have 1 Nurseries active at a time. TIP: Reset active powers multiple times if you are stuck, or choose a different nursery after reaching more than 1e10 Nurseries!"],
+                    ["display-text", () => 
+                
+                       "Depending on what content you have. You may only choose limited amount of Nurseries active."],
+             
                     ["blank", "15px"],
                     ["row", [["clickable", 11],["clickable", 12],["clickable", 13]]],
                  
@@ -2029,7 +2494,7 @@ return req;}, // Can be a function that takes requirement increases into account
         ["blank", "15px"],
         ["display-text", () => "You have made a total of "+formatWhole(player.n.absolPerTotal)+" Absol Perpetuals." ],
         ["blank", "15px"],
-        ["display-text", () => "Reach 1e12 Absol Perpetuals to unlock Umvuthi the Sunbird." ],
+        ["display-text", () => "Reach 1e14 Absol Perpetuals to unlock Umvuthi the Sunbird." ],
       ["bar", "umvuthiProgress"],
        ["blank", "15px"],
         ["row", [["clickable", 31]]],
@@ -2040,7 +2505,7 @@ return req;}, // Can be a function that takes requirement increases into account
     ]
 },
 "Sunbird": {
-    unlocked: () => 	(player.n.absolPer.gte(1e12)||player.n.umvuthiUnl),
+    unlocked: () => 	(player.n.absolPer.gte(1e14)||player.n.umvuthiUnl),
 content: [
 
 ["display-text", () => "You have "+formatWhole(player.n.absolPer)+" Absol Perpetuals." ],
@@ -2085,7 +2550,7 @@ content: [
        "milestones",
        ["display-text", () => (
         (player.n.points.gte(1e175))
-        ) ? "<br><span style='color:orange'>Due to too much medications, Nursery Points gain will be divided the more you have Nursery Points.</span><br>" : ""],
+        ) ? "<br><span style='color:orange'>Nursery Point gain is ^0.001 after 1e175 Nursery Points.</span><br>" : ""],
         ["blank", "25px"],
         ["blank", "25px"],
        
@@ -2108,13 +2573,19 @@ content: [
                            effect() {
                                
                              
-                               let eff = player.n.total.plus(1).pow(1.85).min(tmp.n.upgrades[this.id].cap);
+                               let eff = player.n.total.plus(1).pow(1.85)
+                               let softcap1 = new Decimal(1e35)
+
+ 
                
+             
+
+                               if (eff.gte(softcap1)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap1)).pow(3/6)).mul(softcap1)
                    
                                return eff;
                            },
                            
-                           effectDisplay() { return format(tmp.n.upgrades[11].effect)+"x"+(tmp.n.upgrades[11].effect.gte(tmp.n.upgrades[this.id].cap)?" (HARDCAPPED)":"") },
+                           effectDisplay() { return format(tmp.n.upgrades[11].effect)+"x"+(tmp.n.upgrades[11].effect.gte(tmp.n.upgrades[this.id].cap)?" (SOFTCAPPED)":"") },
                           
         },	
         12: {
@@ -2156,11 +2627,12 @@ content: [
         },
         15: {
             title: "Hatchery",
-            description: "Unlock Nursery Hatcheries. Nursery Points gain is <br>(Multi+1^0.002x<br>(Points+1^0.005))",
-            cost: new Decimal(5e23),
+            description: "Unlock Nursery Hatcheries. Nursery Points gain is boosted.",
+            cost: new Decimal(1e15),
            unlocked() {return hasUpgrade("n",14)},
            effect() {           
-            let eff = player.m.points.plus(1).pow(0.002).times(player.points.plus(1).pow(0.005))
+            let eff = player.m.points.plus(1).pow(0.0001)
+            if (hasUpgrade("n",26)) eff = eff.pow(1.11)
             return eff;
         },
         
@@ -2171,28 +2643,49 @@ content: [
             title: "Medical Marionette",
             description: "Absol Perpetuals multiply Nursery Points gain.",
             cost: new Decimal(5),
+            cap2() {let cap = new Decimal(1.5e9)
+            
+            return cap;},
            unlocked() {return hasUpgrade("n",15)&&hasUpgrade("a",43)},
            currencyDisplayName: "absol perpetuals",
 currencyInternalName: "absolPer",
 currencyLayer: "n",
-           effect() {           
-            let eff = player.n.absolPer.plus(1).pow(0.32)
-            return eff;
-        },
+  
+        cap() { let cap = new Decimal(5e5)
+       
+                           return cap; },
+                       
+                       effect() {
+                           
+                         
+                        let eff = player.n.absolPer.plus(1).pow(0.32).min(tmp.n.upgrades[this.id].cap2);
+
+                           let softcap1 = new Decimal(5e5)
+
+
+           
+         
+
+                           if (eff.gte(softcap1)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap1)).pow(5.99/6)).mul(softcap1)
+               
+                           return eff;
+                       },
+                       
+                       effectDisplay() { return format(tmp.n.upgrades[21].effect)+"x"+(tmp.n.upgrades[21].effect.gte(tmp.n.upgrades[this.id].cap)?" (SOFTCAPPED)":"") },
         
-        effectDisplay() { return format(tmp.n.upgrades[21].effect)+"x" },     
+    
      
         },	
         22: {
             title: "Health Sensor",
-            description: "Gain twice as much Absol Perpetuals. Nursery Points gain is <br>(Absolute+1^0.085x<br>(Points+1^0.004))",
+            description: "Gain twice as much Absol Perpetuals. Nursery Points gain is boosted more.",
             cost: new Decimal(10),
            unlocked() {return hasUpgrade("n",21)},
            currencyDisplayName: "absol perpetuals",
 currencyInternalName: "absolPer",
 currencyLayer: "n",
 effect() {           
-    let eff = player.a.points.plus(1).pow(0.085).times(player.points.plus(1).pow(0.004))
+    let eff = player.points.plus(1).pow(0.0004)
     return eff;
 },
 
@@ -2209,10 +2702,13 @@ currencyInternalName: "absolPer",
 currencyLayer: "n",
 effect() {           
     let eff = player.n.absolPer.plus(1).pow(0.725).times(player.a.points.plus(1).pow(0.6))
+    let softcap1 = new Decimal(1e22)
+    if (eff.gte(softcap1)) eff = Decimal.pow(10,Decimal.log10(eff.div(softcap1)).pow(5/6)).mul(softcap1)
     return eff;
 },
 
-effectDisplay() { return format(tmp.n.upgrades[23].effect)+"x" },    
+
+effectDisplay() { return format(tmp.n.upgrades[23].effect)+"x"+(tmp.n.upgrades[23].effect.gte(1e22)?" (SOFTCAPPED)":"") },    
      
         },	
         24: {
@@ -2256,7 +2752,7 @@ effectDisplay() { return format(tmp.n.upgrades[16].effect)+"x" },
         },	
         26: {
             title: "Recovery",
-            description: "The hardcap for Nursery Health is extended 24 times.",
+            description: "Hatchery effect^1.11.",
             cost: new Decimal(16000),
            unlocked() {return hasUpgrade("n",16)},
            currencyDisplayName: "absol perpetuals",
@@ -2273,7 +2769,7 @@ currencyLayer: "n",
 currencyInternalName: "absolPer",
 currencyLayer: "n",
 effect() {           
-    let eff = player.points.plus(1).pow(0.005)
+    let eff = player.points.plus(1).pow(0.0005)
     return eff;
 },
 
@@ -2298,14 +2794,14 @@ effectDisplay() { return format(tmp.n.upgrades[32].effect)+"x" },
         },	
         33: {
             title: "Absol Repeaters",
-            description: "Unlock Absolities. Nursery Points gain is <br>(Nursery+1^0.002x<br>(Points+1^0.003))",
-            cost: new Decimal(150000),
+            description: "Unlock Absolities. Nursery Points gain is boosted even more.",
+            cost: new Decimal(1e8),
            unlocked() {return hasUpgrade("n",32)},
            currencyDisplayName: "absol perpetuals",
 currencyInternalName: "absolPer",
 currencyLayer: "n",
 effect() {           
-    let eff = player.n.points.plus(1).pow(0.002).times(player.points.plus(1).pow(0.003))
+    let eff = player.n.points.plus(1).pow(0.001)
     return eff;
 },
 
@@ -2319,13 +2815,18 @@ effectDisplay() { return format(tmp.n.upgrades[33].effect)+"x" },
         11: {
             title: "Nursery Power",
             display() {
-                if(!getClickableState(this.layer, this.id)) return "Whiskerbloom's effect is multiplied by 1.05."; else return "Whiskerbloom's effect is multiplied by 1.05.<br>ACTIVE"
+                if(!getClickableState(this.layer, this.id)) return "Stross effect+0.1"; else return "Stross effect+0.1.<br>ACTIVE"
             },
             canClick() {
                
+                if(hasAchievement('ach', 52)) return true;
                
-               
+                if(!hasUpgrade('a', 43)) {
                     if(!getClickableState(this.layer, 12) && !getClickableState(this.layer, 13)) return true; else return false
+                }
+                if(hasUpgrade('a', 43)) {
+                    if(!getClickableState(this.layer, 12) || !getClickableState(this.layer, 13)) return true; else return false
+                }
                 
             },
             onClick() {
@@ -2336,30 +2837,40 @@ effectDisplay() { return format(tmp.n.upgrades[33].effect)+"x" },
         12: {
             title: "Nursery Power 2",
             display() {
-                if(!getClickableState(this.layer, this.id)) return "Points gain is raised ^1.2."; else return "Points gain is raised ^1.2.<br>ACTIVE"
+                if(!getClickableState(this.layer, this.id)) return "Stross effect+0.05. Panda-Cola Biscuits hc start+0.05"; else return "Stross effect+0.05. Panda-Cola Biscuits hc start+0.05.<br>ACTIVE"
             },
             canClick() {
                
+                if(hasAchievement('ach', 52)) return true;
                
-               
+                if(!hasUpgrade('a', 43)) {
                     if(!getClickableState(this.layer, 11) && !getClickableState(this.layer, 13)) return true; else return false
+                }
+                if(hasUpgrade('a', 43)) {
+                    if(!getClickableState(this.layer, 11) || !getClickableState(this.layer, 13)) return true; else return false
+                }
                 
             },
             onClick() {
                 setClickableState(this.layer, this.id, true)
             },
-            unlocked() {return hasUpgrade("a",27)},
+            unlocked() {return hasUpgrade("a",37)},
         },
         13: {
             title: "Nursery Power 3",
             display() {
-                if(!getClickableState(this.layer, this.id)) return "Direct multi for Nursery Points is multiplied by 5."; else return "Direct multi for Nursery Points is multiplied by 5.<br>ACTIVE"
+                if(!getClickableState(this.layer, this.id)) return "Panda-Cola Biscuits hc start+0.1."; else return "Panda-Cola Biscuits hc start+0.1.<br>ACTIVE"
             },
             canClick() {
                
+                if(hasAchievement('ach', 52)) return true;
                
-               
+           if(!hasUpgrade('a', 43)) {
                     if(!getClickableState(this.layer, 11) && !getClickableState(this.layer, 12)) return true; else return false
+                }
+                if(hasUpgrade('a', 43)) {
+                    if(!getClickableState(this.layer, 11) || !getClickableState(this.layer, 12)) return true; else return false
+                }
                 
             },
             onClick() {
@@ -2389,8 +2900,8 @@ effectDisplay() { return format(tmp.n.upgrades[33].effect)+"x" },
         31: {
             gain() { 
                 let n = player.n.points.add(1).max(1)
-                if (n.lt("1e50")) return new Decimal(0)
-                n = Decimal.pow(55,n.log10().div(50).sub(1)).max(1).mul(tmp.n.clickables[31].gainmult)
+                if (n.lt("1e60")) return new Decimal(0)
+                n = Decimal.pow(55,n.log10().div(60).sub(1)).max(1).mul(tmp.n.clickables[31].gainmult)
                 return n.floor()
             },
             next() {
@@ -2403,17 +2914,20 @@ effectDisplay() { return format(tmp.n.upgrades[33].effect)+"x" },
             if (hasUpgrade("n",22)) mult = mult.times(2)
             if (hasUpgrade("n",32)) mult = mult.times(upgradeEffect("n",32))
             if (hasUpgrade("n",33)) mult = mult.times(tmp.n.buyables[23].effect.first);
+            if (hasUpgrade("a",45)) mult = mult.times(5)
+            if (hasAchievement("ach",46)) mult = mult.times(1.1)
             if (player.n.umvuthiUnl) mult = mult.times(tmp.n.foodEffect)
+            if (hasAchievement("ach",53)) mult = mult.times(2)
                 return mult;
             },
             display() {
-                let dis = "Reset Nursery Points for +<h3>" + formatWhole(tmp.n.clickables[31].gain) + "</h3> Absol Perpetuals<br>" /*+"<br>Next at " + format(tmp.n.clickables[31].next) + " nursery points"
-            */
+                let dis = "Reset Nursery Points for +<h3>" + formatWhole(tmp.n.clickables[31].gain) + "</h3> Absol Perpetuals<br>"
+            
            
                 return dis
             },
             canClick() {
-                return player.n.points.gte(1e50)&&hasUpgrade("a",43)
+                return player.n.points.gte(1e60)&&hasUpgrade("a",43)
             },
             onClick() {
               player.n.absolPer = player.n.absolPer.add(tmp.n.clickables[31].gain)
@@ -2425,6 +2939,7 @@ effectDisplay() { return format(tmp.n.upgrades[33].effect)+"x" },
                
             
             },
+            unlocked() {return !hasUpgrade("n",25)},
             
             },
             41: {
@@ -2434,7 +2949,7 @@ effectDisplay() { return format(tmp.n.upgrades[33].effect)+"x" },
                 },
                 
                 cost() {
-                    let cost = new Decimal(1e12)
+                    let cost = new Decimal(1e14)
                     if (player.n.food.gte(2)) cost = cost.times(player.n.food.times(2))
                     if (player.n.food.gte(5)) cost = cost.times(player.n.food.times(4))
                     if (player.n.food.gte(6)) cost = cost.add(1).pow(player.n.food.sub(4.80))
@@ -2507,7 +3022,7 @@ return cost;
                 if (player.n.buyables[12].gte(4)) cost = cost.add(2)
   return cost;
            },
-              cost(x) { return new Decimal(1e6).mul(new Decimal(1e6).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              cost(x) { return new Decimal(10000).mul(new Decimal(10).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
               title() { return "Type I Nurseries" },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -2518,7 +3033,7 @@ return cost;
               }, 
               effect(x) { // Effects of owning x of the items, x is a decimal
                   let eff = {}
-                  if (x.gte(0)) eff.first = Decimal.pow(1.04, x.pow(1.05))
+                  if (x.gte(0)) eff.first = Decimal.pow(1.02, x.pow(1.08))
                   else eff.first = Decimal.pow(1/45, x.times(-1).pow(1.0))
               
                   if (x.gte(0)) eff.second = x.pow(0.8)
@@ -2530,8 +3045,12 @@ return cost;
                   player.n.points = player.n.points.sub(this.cost())
                   setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
               },
-          unlocked() {return hasUpgrade("a",36)},
-          purchaseLimit:6,
+          unlocked() {return hasUpgrade("a",35)},
+          purchaseLimit() {let cap = new Decimal(6)
+            
+            if (hasUpgrade("a",107)) cap = cap.add(1)
+        return cap;
+        },
     
           },
           13: {
@@ -2572,7 +3091,7 @@ return cost;
            if (getBuyableAmount("n",21).gte(128)) cost = cost.add(5)
   return cost;
            },
-              cost(x) { return new Decimal(1e47).pow(new Decimal(1.01).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
+              cost(x) { return new Decimal(1e15).pow(new Decimal(1.04).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
               title() { return "Nursery Hatchery Addition" },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -2633,6 +3152,7 @@ return cost;
             costScaling() {let cost =  new Decimal(1)
                 if (getBuyableAmount("n",23).gte(42)) cost = cost.add(3)
                 if (player.n.buyables[this.id].gte(18)) cost = cost.times(3)
+                if (player.n.buyables[this.id].gte(22)) cost = cost.times(player.n.buyables[this.id].pow(0.04).add(1))
   return cost;
            },
               cost(x) { return new Decimal(1e73).pow(new Decimal(1.007).pow(x).pow(tmp[this.layer].buyables[this.id].costScaling)) },
@@ -2695,12 +3215,12 @@ return cost;
           },
           32: {
             costScaling() {let cost =  new Decimal(1)
-           if (getBuyableAmount("n",32).gte(4)) cost = cost.add(0.5)
-           if (getBuyableAmount("n",32).gte(9)) cost = cost.add(x.div(100))
-           if (getBuyableAmount("n",32).gte(12)) cost = cost.add(x.div(50))
+           if (getBuyableAmount("n",32).gte(4)) cost = cost.add(x.times(0.003))
+           if (getBuyableAmount("n",32).gte(7)) cost = cost.add(x.div(100))
+           if (getBuyableAmount("n",32).gte(9)) cost = cost.add(x.div(50))
   return cost;
            },
-           cost(x) { return new Decimal(1e20).mul(new Decimal(10).pow(x.times(tmp.n.buyables[32].costScaling))) },
+           cost(x) { return new Decimal(1e20).mul(new Decimal(50).pow(x.times(tmp.n.buyables[32].costScaling))) },
               title() { return "Umvuthana Raptor" },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -2730,8 +3250,8 @@ return cost;
           },
           33: {
             costScaling() {let cost =  new Decimal(1)
-           if (getBuyableAmount("n",33).gte(4)) cost = cost.add(2)
-             
+           if (getBuyableAmount("n",33).gte(3)) cost = cost.add(2)
+           if (getBuyableAmount("n",33).gte(9)) cost = cost.add(x.div(100))
   return cost;
            },
            cost(x) { return new Decimal(2.5e28).mul(new Decimal(100).pow(x.times(tmp.n.buyables[33].costScaling))) },
@@ -2810,10 +3330,10 @@ return cost;
             width: 600,
             height: 70,
             progress() {
-                return (player.n.absolPer.add(1).log(10).div(12)).toNumber()
+                return (player.n.absolPer.add(1).log(10).div(14)).toNumber()
             },
             display() {
-                return format(player.n.absolPer) + " / 1e12 Absol Perpetuals"
+                return format(player.n.absolPer) + " / 1e14 Absol Perpetuals"
             },
             unlocked() {return hasUpgrade("a",43)},
     
@@ -2829,10 +3349,10 @@ return cost;
             width: 700,
             height: 90,
             progress() {
-                return (player.n.points.add(1).log(10).div(175)).toNumber()
+                return (player.n.points.add(1).log(10).div(180)).toNumber()
             },
             display() {
-                return format(player.n.points) + " / 1e175 Nursery Points<br>Progress: "+format(player.n.points.add(1).log(10).div(175).mul(100))+"% completed.<br>Reach 1e175 Nursery Points to unlock a new layer."
+                return format(player.n.points) + " / 1e180 Nursery Points<br>Progress: "+format(player.n.points.add(1).log(10).div(181).mul(100))+"% completed.<br>Reach 1e180 Nursery Points to unlock a new layer."
             },
             unlocked() {return player.n.umvuthiUnl},
     
@@ -2848,6 +3368,7 @@ addLayer("joke", {
     startData() { return {
         unlocked: true,
         points: new Decimal(0),
+     
     }},
     color: "#0F0F0F",
     
@@ -2860,14 +3381,20 @@ addLayer("joke", {
       
             
 
-        }
+        },
+      
+      
       
     },
 	
             
  tabFormat: ["clickables",  
  ["display-image", () =>   (hasUpgrade("s",107)||hasMilestone("sm",2)) ? "/Previous Awakening.png":""],
- ["display-text", () =>   (hasUpgrade("s",107)||hasMilestone("sm",2)) ? "This is RTLF's awakening form from 2023.":""],],
+ ["display-text", () =>   (hasUpgrade("s",107)||hasMilestone("sm",2)) ? "This is RTLF's awakening form from 2023.":""],
+
+
+],
+
  
   symbol: "",
     row: "side",
@@ -2924,7 +3451,7 @@ addLayer("sm", {
             
            
             display() {
-                let dis = "Smack all of your progression to advance the next level of your Smackery Levels.<br>Requires:"+format(tmp.sm.clickables[11].cost)+" Fox Duration"+(hasMilestone("sm",1) ? " and have bought Celestial Upgrade 17.":"")
+                let dis = "Smack Points & Smackery and Multi Points to advance the next level of your Smackery Levels.<br>Requires:"+format(tmp.sm.clickables[11].cost)+" Fox Duration"+(hasMilestone("sm",1) ? " and have bought Celestial Upgrade 17.":"")
             
            
                 return dis
@@ -2998,7 +3525,7 @@ addLayer("sm", {
  doReset(resettingLayer) {
     let keep = [];
     if (hasMilestone("ab",0)) keep.push("milestones")
- 
+    if (hasMilestone("ab",0)) keep.push("points")
     if (layers[resettingLayer].row > this.row) layerDataReset("sm", keep)
 },
 })
@@ -3029,14 +3556,14 @@ addLayer("s", {
         buyable42Amn: new Decimal(0),
     }},
     color: "indigo",
-    requires() { let req = new Decimal("1e5350") 
-    if (player.s.unlocked) return new Decimal(2.5e31)
+    requires() { let req = new Decimal("1e13650") 
+
 return req;}, // Can be a function that takes requirement increases into account
     resource: "sessions", // Name of prestige currency
     baseResource: "multi points", // Name of resource prestige is based on
     baseAmount() {return player.m.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.1, // Prestige currency exponent
+    exponent: 0.0025, // Prestige currency exponent
     base: 2,
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
@@ -3055,7 +3582,7 @@ return req;}, // Can be a function that takes requirement increases into account
  if (player.ab.unlocked) mult = mult.times(tmp.ab.effect)
  if (hasUpgrade("aP",11)) mult = mult.times(upgradeEffect("aP",11))
  if (getBuyableAmount("ab",11).gte(4)) mult = mult.times(tmp.aT.effect)
- if (hasMilestone("aperdinal",0)) mult = mult.pow(1.4)
+ if (hasMilestone("aperdinal",0)) mult = mult.pow(1.1)
         return mult
     },
     softcap() {let cap = new Decimal(100)
@@ -3069,13 +3596,19 @@ return req;}, // Can be a function that takes requirement increases into account
 return pow;
     },
     passiveGeneration() { return (hasUpgrade("s", 31))?1:0 },
+
+    tooltip() { // Optional, tooltip displays when the layer is unlocked
+        let tooltip = formatWhole(player[this.layer].points) + " " + this.resource
+        if (hasUpgrade("s",23)) tooltip += "<small><i><br>" + formatWhole(player.s.therapyS) + " Therapy Sessions</i></small>"
+        return tooltip
+    },
     tabFormat: {
         "Main": {
             buttonStyle() { return {'background-color': 'indigo'} },
             content: ["main-display",
             "prestige-button",
             "resource-display",
-            ["display-text", () => "NOTE: Once resetting for first time, you will lose access to Ultra, Absolute and Nursery Points." ],
+            "milestones",
            
             "blank",
             ["row", [["upgrade", 11],["upgrade", 12],["upgrade", 13],["upgrade", 14],["upgrade", 15],["upgrade", 16],["upgrade", 17]]],
@@ -3088,6 +3621,7 @@ return pow;
         ]},
         "Therapy": {
             unlocked() {return hasUpgrade("s",23)},
+            shouldNotify() {return tmp.s.clickables[11].canClick},
             content: [
                 "main-display",
                     "prestige-button",
@@ -3116,10 +3650,32 @@ return pow;
             ]},
       
     },
-  
+    milestones: {
+        0: {
+            requirementDescription: "1 Sessions",
+            effectDescription: "Keep Nursery Milestones.",
+            done() { return player.s.points.gte(1) }
+        },
+       
+        1: {
+            requirementDescription: "3 Sessions",
+            effectDescription: "Keep Nursery Upgrades.",
+            done() { return player.s.points.gte(3) },
+            unlocked() {return hasMilestone("s",0)},
+        },
+        2: {
+            requirementDescription: "100 Sessions",
+            effectDescription: "Keep Nursery Buyables.",
+            done() { return player.s.points.gte(100) },
+            unlocked() {return hasMilestone("s",1)},
+        },
+    
+       
+    },
     microtabs: {
         stuff: {
             "Sessions": {
+          
                 content: [
                    
                     ["display-text", () => "You have <h1 style='color: indigo; text-shadow: indigo 0px 0px 10px;'>"+formatWhole(player.s.therapyS)+"</h1> Therapy Sessions, which are multiplying Sessions gain by "+format(tmp.s.theraEffect)+"x, but are dividing Points gain by the same amount." ],
@@ -3217,10 +3773,10 @@ bars: {
        
         return exp;
     },
-    layerShown(){return (player.n.points.gte(1e175)||player.s.unlocked)&&player.aN.tree == "normal"},
+    layerShown(){return (player.n.points.gte(1e180)||player.s.unlocked)&&player.aN.tree == "normal"},
     addToBase() {
         let base = new Decimal(0);
-
+        if (hasUpgrade("a",103)) base = base.add(50)
         return base;
     },
     axisProduction() { return player.s.axisX.times(player.s.axisY).times(player.s.axisZ) },
@@ -3232,19 +3788,20 @@ bars: {
         base = base.plus(tmp.s.addToBase);
         
         // MULTIPLY
-      
+        if (hasUpgrade("a",106)) base = powExp(base,2)
         
         return base.pow(tmp.s.power);
     },
     power() {
         let power = new Decimal(1);
+        if (hasUpgrade("a",103)) power = power.add(5)
       
         return power;
     },
     
     effect() {
-        let eff = Decimal.pow(tmp.s.effectBase, player.s.best.plus()).max(1).times(1);
-        if (tmp.s.effect.gte(50000)) return new Decimal(50000)
+        let eff = Decimal.times(tmp.s.effectBase, player.s.best.plus()).max(1).times(1);
+        if (tmp.s.effect.gte(1e300)) return new Decimal(1e300)
         return eff;
     },
    branches: ["m","n"],
@@ -3258,15 +3815,15 @@ bars: {
         },
     ],
     effectDescription() {
-        return "which are boosting Points and Multi Points gain by "+format(tmp.s.effect)+"x. (effect based on best session)"
+        return "which are making Points and Multipoints buyable effect impede "+format(tmp.s.effect)+"x later. (effect based on best session)"
     },
     
     
     doReset(resettingLayer) {
         let keep = [];
         
+        if (hasMilestone("ab",0)) keep.push("milestones")
         if (hasMilestone("ab",0)) keep.push("upgrades")
-     
         if (layers[resettingLayer].row > this.row) layerDataReset("s", keep)
     },
   
@@ -3288,10 +3845,10 @@ bars: {
            effect() {
                 
               
-            let eff = player.m.points.plus(1).pow(0.011)
+            let eff = player.m.points.plus(1).pow(0.00005).times(tmp.a.cheapPow)
            if (getBuyableAmount("a",41).gte(1)) eff = eff.times(tmp.a.buyables[41].effect.first)
            if (getBuyableAmount("aP",12).gte(1)) eff = eff.times(tmp.aP.buyables[12].effect.first)
-           if (hasUpgrade("aM",16)) eff = eff.pow(1.5)
+           if (hasUpgrade("aM",16)) eff = powExp(eff, 1.45)
             return eff;
         },
         
@@ -3300,12 +3857,12 @@ bars: {
         13: {
             title: "Fool's Bolete",
             description: "Multpliy Multi Points gain based on Sessions.",
-            cost: new Decimal(10),
+            cost: new Decimal(300),
            unlocked() {return hasUpgrade("s",12)},
            effect() {
                 
               
-            let eff = player.s.points.plus(1).pow(0.009)
+            let eff = player.s.points.plus(1).pow(0.075)
 
          if (hasUpgrade("s",16)) eff = eff.pow(5)
          if (hasUpgrade("s",113)) eff = eff.pow(1.4)
@@ -3316,20 +3873,20 @@ bars: {
         },	
         14: {
             title: "Wrinklegill",
-            description: "Keep Multi Upgrades on resets.",
-            cost: new Decimal(15),
+            description: "Autoclick on Foods every tick if possible.",
+            cost: new Decimal(400),
            unlocked() {return hasUpgrade("s",13)},
           
         },
         15: {
             title: "Green Rot",
             description: "Raise Points gain based on Sessions.",
-            cost: new Decimal(30),
+            cost: new Decimal(1000),
            unlocked() {return hasUpgrade("s",14)},
            effect() {
                 
               
-            let eff = player.s.points.plus(1).pow(0.02)
+            let eff = player.s.points.plus(1).pow(0.0005)
 
 
             return eff;
@@ -3339,20 +3896,20 @@ bars: {
         },	
         16: {
             title: "Shriekbulb",
-            description: "Fool's Bolete effect is raised ^5.",
-            cost: new Decimal(45),
+            description: "Fool's Bolete effect is raised ^5. You will automatically select the 3 Nurseries.",
+            cost: new Decimal(3000),
            unlocked() {return hasUpgrade("s",15)},
            
         },	
         17: {
             title: "Tidygrass",
             description: "Sessions multiply their own gain.",
-            cost: new Decimal(100),
+            cost: new Decimal(9000),
            unlocked() {return hasUpgrade("s",16)},
            effect() {
                 
               
-            let eff = player.s.points.plus(1).pow(0.02)
+            let eff = player.s.points.plus(1).pow(0.15)
 
             if (hasUpgrade("s",113)) eff = eff.times(15)
             return eff;
@@ -3363,12 +3920,12 @@ bars: {
         21: {
             title: "Everdaisy",
             description: "Pointy Multiplier's cap and effect is boosted by your Sessions.",
-            cost: new Decimal(250),
+            cost: new Decimal(12500),
            unlocked() {return hasUpgrade("s",17)},
            effect() {
                 
               
-            let eff = player.s.points.plus(1).pow(0.05)
+            let eff = player.s.points.plus(1).pow(0.1125)
 
 
             return eff;
@@ -3379,14 +3936,14 @@ bars: {
         22: {
             title: "Ichorpuff",
             description: "Weaken the softcap for Sessions.",
-            cost: new Decimal(1000),
+            cost: new Decimal(20000),
            unlocked() {return hasUpgrade("s",21)},
            tooltip() {return "0.2 → 0.25"},
         },	
         23: {
             title: "Therapist",
             description: "Unlock Therapy Sessions.",
-            cost: new Decimal(5000),
+            cost: new Decimal(50000),
            unlocked() {return hasUpgrade("s",22)},
           
         },	
@@ -3517,7 +4074,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.m.points.plus(1).pow(0.0015)
+            let eff = player.m.points.plus(1).pow(0.000015)
 
 
             return eff;
@@ -3542,7 +4099,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.points.plus(1).pow(0.004)
+            let eff = player.points.plus(1).pow(0.00004)
 
 
             return eff;
@@ -3667,7 +4224,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.m.points.plus(1).pow(0.0011)
+            let eff = player.m.points.plus(1).pow(0.000011)
 
 
             return eff;
@@ -3693,7 +4250,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.points.plus(1).pow(0.0011)
+            let eff = player.points.plus(1).pow(0.000011)
 
 
             return eff;
@@ -3864,7 +4421,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.points.plus(1).pow(0.006)
+            let eff = player.points.plus(1).pow(0.00006)
 
 
             return eff;
@@ -4002,7 +4559,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.points.plus(1).pow(0.00185)
+            let eff = player.points.plus(1).pow(0.0000185)
 
 
             return eff;
@@ -4056,7 +4613,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.m.points.plus(1).pow(0.0005)
+            let eff = player.m.points.plus(1).pow(0.000005)
 
             if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
             return eff;
@@ -4110,7 +4667,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.points.plus(1).pow(0.001)
+            let eff = player.points.plus(1).pow(0.00001)
             if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
 
             return eff;
@@ -4185,7 +4742,7 @@ bars: {
 						currencyDisplayName: "seconds duration of fox music",
 						currencyInternalName: "durationFox",
 						currencyLayer: "s",
-						cost() { return new Decimal(1e9) },
+						cost() { return new Decimal(5e8) },
 				
            unlocked() {return hasUpgrade("s",67)},
            effect() {
@@ -4293,13 +4850,13 @@ bars: {
 						currencyDisplayName: "seconds duration of fox music",
 						currencyInternalName: "durationFox",
 						currencyLayer: "s",
-						cost() { return new Decimal(1.5e19) },
+						cost() { return new Decimal(1e21) },
 				
            unlocked() {return hasUpgrade("s",74)},
            effect() {
                 
               
-            let eff = tmp.s.effect.plus(1).pow(0.04)
+            let eff = tmp.s.effect.plus(1).pow(0.0075)
 
             if (hasMilestone("sm",0)&&!hasMilestone("sm",1)) eff = eff.pow(0.6)
             return eff;
@@ -4320,7 +4877,7 @@ bars: {
 						currencyDisplayName: "seconds duration of fox music",
 						currencyInternalName: "durationFox",
 						currencyLayer: "s",
-						cost() { return new Decimal(5e28) },
+						cost() { return new Decimal(1e28) },
 				
            unlocked() {return hasUpgrade("s",75)},
            
@@ -4329,13 +4886,13 @@ bars: {
         },			
         77: {
             title: "Grandmasteria",
-            description: "Raise the Fox Multiplier Duration by 1.11.",
+            description: "Raise the Fox Multiplier Duration by 1.125.",
 
 		
 						currencyDisplayName: "seconds duration of fox music",
 						currencyInternalName: "durationFox",
 						currencyLayer: "s",
-						cost() { return new Decimal(1e275) },
+						cost() { return new Decimal(1e269) },
 				
            unlocked() {return hasUpgrade("s",76)},
            
@@ -4533,7 +5090,7 @@ bars: {
         },		
         111: {
             title: "Cardinal Celestials",
-            description: "Multi Points gain is raised ^1.111, however you will lose the effect of Multi Points and Points buyable, Free Points's effect multiply Points gain (raised ^64) and Free Multi Points's effect multiply Multi Points gain (raised ^88)",
+            description: "Multi Points gain is raised ^1.111.",
     
         
                         currencyDisplayName: "celestials",
@@ -4637,7 +5194,7 @@ bars: {
         },		
         116: {
             title: "Wingo",
-            description() { return "Endworldly Celestials upgrade is multiplied by "+format(tmp.s.upgrades[116].efficiency)+" Session gain is multiplied by your Multi Points."},
+            description() { return "Endworldly Celestials upgrade is multiplied by "+format(tmp.s.upgrades[116].efficiency)+", Session gain is multiplied by your Multi Points."},
     
         
                         currencyDisplayName: "celestials",
@@ -4649,7 +5206,7 @@ bars: {
            effect() {
                 
               
-            let eff = player.m.points.plus(1).pow(0.0064)
+            let eff = player.m.points.plus(1).pow(0.000051)
     
            
             return eff;
@@ -4689,9 +5246,9 @@ bars: {
                         currencyDisplayName: "celestials",
                         currencyInternalName: "celestial",
                         currencyLayer: "s",
-                        cost() { return new Decimal(1800) },
+                        cost() { return new Decimal(18000) },
                 
-           unlocked() {return hasUpgrade("s",117)||player.ab.points.gte(6)},
+           unlocked() {return hasUpgrade("s",117)&&player.ab.points.gte(6)},
           
           
 
@@ -4705,10 +5262,26 @@ bars: {
                         currencyDisplayName: "celestials",
                         currencyInternalName: "celestial",
                         currencyLayer: "s",
-                        cost() { return new Decimal(3000) },
+                        cost() { return new Decimal(30000) },
                 
-           unlocked() {return hasUpgrade("s",117)},
+           unlocked() {return hasUpgrade("s",121)},
           tooltip() {return "0.5 → 0.51"},
+          
+
+           
+        },		
+        123: {
+            title: "Pangolin-Celestials",
+            description: "Passive Celestial gain is squared.",
+    
+        
+                        currencyDisplayName: "celestials",
+                        currencyInternalName: "celestial",
+                        currencyLayer: "s",
+                        cost() { return new Decimal(1e6) },
+                
+           unlocked() {return hasUpgrade("s",122)&&player.ir.unlocked},
+       
           
 
            
@@ -4726,6 +5299,7 @@ freeCel() {
     let passive = new Decimal(0.1).times(player.s.parCel)
   if (hasUpgrade("s",114)) passive = passive.add(upgradeEffect("s",114))
   if (hasUpgrade("aP",15)) passive = passive.times(upgradeEffect("aP",15))
+  if (hasUpgrade("s",123)) passive = passive.pow(2)
     return passive;
 },
 
@@ -4758,7 +5332,7 @@ if (hasUpgrade("s",47)) mult = mult.times(upgradeEffect("s",47).x)
 if (hasUpgrade("s",101)) mult = mult.times(tmp.s.XSquareEff)
 if (hasUpgrade("s",101)) mult = mult.times(upgradeEffect("s",101))
 if (hasUpgrade("s",106)) mult = mult.times(upgradeEffect("s",106))
-if (hasMilestone("s",2)) mult = mult.times(3)
+if (hasMilestone("sm",2)) mult = mult.times(3)
 if (hasUpgrade("s",112)) mult = mult.pow(1.15)
 if (player.ab.unlocked) mult = mult.times(tmp.aB2.effect)
 if (hasUpgrade("aperdinal",32)) mult = mult.times(upgradeEffect("aperdinal",32))
@@ -4773,7 +5347,7 @@ axisYMult() {let mult = new Decimal(1)
     if (hasUpgrade("s",102)) mult = mult.times(upgradeEffect("s",102))
     if (hasUpgrade("s",103)) mult = mult.times(tmp.s.YSquareEff)
     if (hasUpgrade("s",106)) mult = mult.times(upgradeEffect("s",106))
-    if (hasMilestone("s",2)) mult = mult.times(3)
+    if (hasMilestone("sm",2)) mult = mult.times(3)
     if (hasUpgrade("s",112)) mult = mult.pow(1.15)
     if (player.ab.unlocked) mult = mult.times(tmp.aB2.effect)
     if (hasUpgrade("aperdinal",32)) mult = mult.times(upgradeEffect("aperdinal",32))
@@ -4787,7 +5361,7 @@ axisYMult() {let mult = new Decimal(1)
         if (hasUpgrade("s",101)) mult = mult.times(upgradeEffect("s",101))
         if (hasUpgrade("s",105)) mult = mult.times(tmp.s.ZSquareEff)
         if (hasUpgrade("s",106)) mult = mult.times(upgradeEffect("s",106))
-        if (hasMilestone("s",2)) mult = mult.times(3)
+        if (hasMilestone("sm",2)) mult = mult.times(3)
         if (hasUpgrade("s",112)) mult = mult.pow(1.15)
         if (player.ab.unlocked) mult = mult.times(tmp.aB2.effect)
         if (hasUpgrade("aperdinal",32)) mult = mult.times(upgradeEffect("aperdinal",32))
@@ -4820,7 +5394,7 @@ axisYMult() {let mult = new Decimal(1)
             if (hasUpgrade("s",74)) duration = duration.pow(upgradeEffect("s",74))
             if (hasUpgrade("s",75)) duration = duration.pow(upgradeEffect("s",75))
             if (hasUpgrade("s",76)) duration = duration.pow(10)
-            if (hasUpgrade("s",77)) duration = duration.pow(1.11)
+            if (hasUpgrade("s",77)) duration = duration.pow(1.125)
             return duration;},
     theraEffect() {
         return Decimal.pow(tmp.s.theraEffBase, player.s.therapyS.plus()).max(1).times(1);
@@ -4835,23 +5409,23 @@ axisYMult() {let mult = new Decimal(1)
             },
             
             cost() {
-                let cost = new Decimal(5000)
+                let cost = new Decimal(50000)
                 if (hasUpgrade("s",24)) cost = cost.div(upgradeEffect2("s",24))
                 if (hasUpgrade("s",25)) cost = cost.div(upgradeEffect2("s",25))
                 if (player.s.therapyS.gte(3)) cost = cost.times(player.s.therapyS.times(0.5))
                 if (player.s.therapyS.gte(5)) cost = cost.times(player.s.therapyS.times(2))
                 if (player.s.therapyS.gte(8)) cost = cost.times(player.s.therapyS.times(4))
-                if (player.s.therapyS.gte(12)) cost = cost.times(player.s.therapyS.pow(8))
+                if (player.s.therapyS.gte(9)) cost = cost.times(player.s.therapyS.pow(8))
 
                 if (player.s.therapyS.gte(14)) cost = cost.times(player.s.therapyS.pow(player.s.therapyS.add(1.15)))
                 if (player.s.therapyS.gte(18)) cost = cost.pow(player.s.therapyS.sub(15))
-
+                if (player.s.therapyS.gte(25)) cost = cost.pow(player.s.therapyS.sub(15))
                 if (hasUpgrade("aD",13)) cost = cost.div(1e16)
                 if (hasUpgrade("aD",14)) cost = cost.pow(0.25)
                 return cost;
                 },
             display() {
-                let dis = "Unalive all Sessions into Therapy Sessions <br><br>You will gain "+formatWhole(tmp.s.clickables[11].gain)+" Therapy Sessions on unalive."
+                let dis = "Unalive all Sessions into Therapy Sessions <br><br>You will gain "+formatWhole(tmp.s.clickables[11].gain)+" Therapy Sessions on unalive.<br>Req: "+formatWhole(tmp.s.clickables[11].cost.times(player.s.therapyS.add(1)))+" Sessions."
             
            
                 return dis
@@ -4937,14 +5511,14 @@ axisYMult() {let mult = new Decimal(1)
   
               display() { // Everything else displayed in the buyable button after the title
                   let data = tmp[this.layer].buyables[this.id]
-                  return "Cost: " + format(data.cost) + " therapy sessions\n\
+                  return "Req: " + format(data.cost) + " therapy sessions\n\
                   Amount: " + player[this.layer].buyables[this.id] + "\n\
                  Gain 1 Maker Axis-X"
               }, 
             
               canAfford() { return player.s.therapyS.gte(this.cost()) },
               buy() {
-                if(!player.ab.unlocked)   player.s.therapyS =player.s.therapyS.sub(this.cost())
+
                     player.s.makeraxisX = player.s.makeraxisX.add(1)
                   setBuyableAmount(this.layer, this.id, getBuyableAmount(this.layer, this.id).add(1))
               },
@@ -4984,6 +5558,7 @@ axisYMult() {let mult = new Decimal(1)
              if (getBuyableAmount("s",13).gte(10)) pow = pow.add(1)
              if (getBuyableAmount("s",13).gte(15)) pow = pow.add(getBuyableAmount("s",13).div(10))
              if (getBuyableAmount("s",13).gte(18)) pow = pow.add(getBuyableAmount("s",13).div(5))
+             if (getBuyableAmount("s",13).gte(19)) pow = pow.add(getBuyableAmount("s",13).div(5))
          return pow;  
          },
              cost(x) { return new Decimal(3500).pow(new Decimal(1.01).pow(x)).pow(tmp.s.buyables[this.id].scalePow) },
@@ -5319,7 +5894,7 @@ addLayer("ab", {
     }},
     color: "yellow",
  
-    requires() { let req = new Decimal(4.5e18) 
+    requires() { let req = new Decimal(1e24) 
 
 return req;}, // Can be a function that takes requirement increases into account
     resource: "apeoblabla points", // Name of prestige currency
@@ -5332,11 +5907,11 @@ return req;}, // Can be a function that takes requirement increases into account
         mult = new Decimal(1)
 
         if (player.ab.unlocked) mult = mult.times(tmp.aB2.effect)
-  if (hasUpgrade("aP",21)) mult = mult.times(upgradeEffect("aP",21))
+        if (hasUpgrade("a",104)) mult = mult.times(100)
   if (hasUpgrade("aD",23)) mult = mult.times(upgradeEffect("aD",23))
   if (getBuyableAmount("ab",11).gte(4)) mult = mult.times(tmp.aT.effect)
   if (hasUpgrade("aperdinal",13)) mult = mult.times(upgradeEffect("aperdinal",13))
-  if (hasMilestone("aperdinal",4)) mult = mult.pow(5)
+
         return mult
     },
 
@@ -5397,33 +5972,50 @@ return req;}, // Can be a function that takes requirement increases into account
    
     effect() {
         if (!player.ab.unlocked) return new Decimal(1)
-        let eff = Decimal.pow(tmp.ab.effectBase, player.ab.best.plus()).max(1).times(1);
+        let eff = Decimal.times(tmp.ab.effectBase, player.ab.best.plus()).max(1).times(1);
         if (eff.gte(1e6)) eff = eff.log10().div(6).pow(0.5).mul(6).pow10()
-        if (tmp.ab.effect.gte(1e7)) return new Decimal(1e7)
+
         return eff;
     },
 
     effectDescription() {
-        return "which are boosting Points, Multi Points and Sessions gain by "+format(tmp.ab.effect)+"x. (effect based on best, capped at 1e7.)"
+        return "which are multiplying Points and Sessions gain by "+format(tmp.ab.effect)+"x. (effect based on best)"
     },
     tabFormat: [
         "main-display",
         "prestige-button",
         "resource-display",
-       
-        "blank",
-        "milestones",
-      "buyables",
+        "buyables",
         "blank",
         ["bar", "quantumFirst"],
+        ["bar", "quantumSecond"],
+        "blank",
+        "milestones",
+    
         ],
         milestones: {
             0: {
-                requirementDescription: "3 Apeoblabla Points",
-                effectDescription: "Keep Session upgrades and Smackery Alterations",
-                done() { return player.ab.points.gte(3) }
+                requirementDescription: "1 Apeoblabla Point",
+                effectDescription: "Keep Session upgrades, milestones and Smackery Alterations",
+                done() { return player.ab.points.gte(1) }
             },
-           
+            1: {
+                requirementDescription: "2 Apeoblabla Points",
+				effectDescription() { return "Sessions multiply Multi Points gain. <br><br>Currently: "+format(Decimal.pow(1.5, player.s.points.max(1).log10()))+"x." },
+                done() { return player.ab.points.gte(2) }
+            },
+            2: {
+                requirementDescription: "4 Apeoblabla Points",
+				effectDescription() { return "Multi Points add to global speed. <br><br>Currently: +"+format(Decimal.add(0.0001).times(player.m.points.root(2e4)).min(tmp.ab.milestones[this.id].cap)) },
+                done() { return player.ab.points.gte(4) },
+                cap() { let cap = new Decimal(0.1)
+
+                   
+                                   return cap; },
+                               
+                            
+                unlocked() { return hasMilestone("ab",1) }
+            },
             
            
         },
@@ -5432,9 +6024,9 @@ return req;}, // Can be a function that takes requirement increases into account
     buyables: {
         11: {
            costPow() {let pow = new Decimal(1)
-        if (getBuyableAmount("ab",11).gte(3)) pow = pow.add(0.25)
+        if (getBuyableAmount("ab",11).gte(3)) pow = pow.add(0.5)
     return pow;},
-              cost(x) { return new Decimal(100).pow(new Decimal(x.add(1))).pow(tmp.ab.buyables[11].costPow) },
+              cost(x) { return new Decimal(1e7).pow(new Decimal(x.add(1))).pow(tmp.ab.buyables[11].costPow) },
               title() { return "Apotheosis" },
   
               display() { // Everything else displayed in the buyable button after the title
@@ -5455,10 +6047,10 @@ return req;}, // Can be a function that takes requirement increases into account
           },
        
         },
-/* // QUANTUM MASKS MAY BE RELEASED IN V0.3.4
+
         bars: {
             quantumFirst: {
-                fillStyle: {'background-color' : "cyan"},
+                fillStyle: {'background-color' : "darkcyan"},
                 baseStyle: {'background-color' : "yellow"},
                
                 textStyle: {'color': 'black'},
@@ -5468,18 +6060,37 @@ return req;}, // Can be a function that takes requirement increases into account
                 width: 600,
                 height: 150,
                 progress() {
-                    return (player.ab.points.add(1).log(10).div(50)).toNumber()
+                    return (player.ab.points.add(1).log(10).div(109)).toNumber()
                 },
                 display() {
-                    return format(player.ab.points) + " / 1e50 Apeoblabla Points <br>Progress: "+format(player.ab.points.add(1).log(10).div(50).mul(100))+"% completed.<br>Reach 1e50 Apeoblabla Points to unlock Quantum Masks (first is Lani-Loli)<br>CRASH BANDICOOT 4 REFERENCE?!."
+                    return format(player.ab.points) + " / 1e109 Apeoblabla Points <br>Progress: "+format(player.ab.points.add(1).log(10).div(109).mul(100))+"% completed.<br>Reach 1e109 Apeoblabla Points to unlock Quantum Masks (first is Lani-Loli)<br>CRASH BANDICOOT 4 REFERENCE?!."
                 },
-                unlocked() {return player.ab.unlocked&&!player.ab.points.gte(1e50)},
+                unlocked() {return player.ab.unlocked&&!player.ab.points.gte(1e109)},
+        
+            },
+            quantumSecond: {
+                fillStyle: {'background-color' : "magenta"},
+                baseStyle: {'background-color' : "darkcyan"},
+               
+                textStyle: {'color': 'black'},
+        
+             
+                direction: RIGHT,
+                width: 600,
+                height: 150,
+                progress() {
+                    return (player.ab.points.add(1).log(10).div(500)).toNumber()
+                },
+                display() {
+                    return format(player.ab.points) + " / 1e500 Apeoblabla Points <br>Progress: "+format(player.ab.points.add(1).log(10).div(500).mul(100))+"% completed.<br>Reach 1e500 Apeoblabla Points to unlock Akano. (Not released yet)"
+                },
+                unlocked() {return player.ab.points.gte(1e109)&&!player.ab.points.gte("1e500")},
         
             },
            
             
         },
-        */
+     
 })
 
 addLayer("aN", {
@@ -5502,16 +6113,109 @@ addLayer("aN", {
    
  
     row: "side", // Row the layer is in on the tree (0 is the first row)
+    tabFormat: {
+        "Main": {
+            
+            content: [ "blank",
+            ["display-text",
+                function() {return "<h1>Navigation</h1>"},
+                    {}],
+            "blank",
+          
+            ["blank", "15px"],
+            ["row", [["clickable", 11],["clickable", 12]]],
+            ["blank", "50px"],
+            ["row", [["clickable", 21]]],],
+    
+        },
+        "'Quantum Masks' Upgrades": {
+            unlocked() {return hasMilestone("aperdinal",0)},
+            content: [ "blank",
+           ["microtabs", "stuff"],
+        ],
+        },
+    },
+    microtabs: {
+        stuff: {
+         
+            "Lani-Loli": {
+      
+                buttonStyle() { return {'border-color': 'darkcyan'} },
+                content: [
+                  
+                        ["display-text", () => (
+                            (!player.ab.points.gte(1e109)&&!getBuyableAmount("aperdinal",51).gte(1))
+                            ) ? "<h3>You need to have 1e109 Apeoblabla Points to unlock Lani-Loli upgrades.</h3>":"" ],
+
+                            "upgrades",
+                ]
+            },
+            "Akano": {
+         
+                buttonStyle() { return {'border-color': 'magenta'} },
+                content: [
+                    ["display-text",
+ function() {return "<h3>Coming soon!</h3>"},
+                        {}],
+                ]
+            },
+        },
+    },
+    upgrades: {
+			
+        11: {
+            title: "S",
+            description: "Kos multiplies Points gain. Unlocks to ability to toss your Koss.",
+            cost: new Decimal("1e25850"),
+            effect() {
+                
+              
+                let eff = player.aperdinal.kos.max(1).cbrt()
+
+        
+                return eff;
+            },
+            
+            effectDisplay() { return format(tmp.aN.upgrades[11].effect)+"x" },
+            currencyDisplayName: "points",
+            currencyInternalName: "points",
+          unlocked() {return player.ab.points.gte(1e109)||getBuyableAmount("aperdinal",51).gte(1)}
+            
+        },	
+        12: {
+            title: "a",
+            description: "Kos gain is raised ^1.5",
+            cost: new Decimal("1e27500"),
+         
+            currencyDisplayName: "points",
+            currencyInternalName: "points",
+          unlocked() {return player.ab.points.gte(1e109)||getBuyableAmount("aperdinal",51).gte(1)}
+            
+        },	
+        13: {
+            title: "g",
+            description: "Beat the game.",
+            cost: new Decimal("1e28000"),
+         /* Unlock Lanberries. */
+            currencyDisplayName: "points",
+            currencyInternalName: "points",
+          unlocked() {return player.ab.points.gte(1e109)||getBuyableAmount("aperdinal",51).gte(1)}
+            
+        },	
+        14: {
+            title: "i",
+            description: "You cannot purchase it haha",
+            cost: new Decimal("eee1e1000"),
+         
+            currencyDisplayName: "points",
+            currencyInternalName: "points",
+          unlocked() {return player.ab.points.gte(1e109)||getBuyableAmount("aperdinal",51).gte(1)}
+            
+        },	
+    },
    
-    tabFormat: [
-    "blank",
-    ["display-text",
-        function() {return "<h1>Navigation</h1>"},
-            {}],
-    "blank",
   
-    "blank",
-    "clickables",],
+   
     clickables:{
         11: {
           
@@ -5555,7 +6259,83 @@ addLayer("aN", {
             
       
         },
+        21: {
+          
+            display() {
+                let dis = "Aperdinality Lore"
+            
+           
+                return dis
+            },
+            unlocked() {return hasMilestone("aperdinal",0)},
+                        canClick() {
+                return true
+            },
+            onClick() {
+             player.aN.tree = "lore1"
+                },
+                style: {'height':'172px', 'width':'172px', 'font-size':'13px', 'background-color':'cyan',
+               
+            
+            },
+            
+      
+        },
     },
    
 
+})
+
+addLayer("ir", {
+    name: "iron", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "<img src='/Iron.png' style='width:calc(35% - 2px);height:calc(90% - 2px);margin:10%'></img>", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: false,
+		points: new Decimal(0),
+        best: new Decimal(0),
+        total: new Decimal(0),
+
+       
+    }},
+    color: "#506970",
+    base: 50,
+    exponent: 3,
+    baseResource: "stabs",
+    resource: "irons",
+    requires: new Decimal(1e91), // Can be a function that takes requirement increases into account
+    baseAmount() {return player.aperdinal.stabs}, // Get the current amount of baseResource
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+  
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+
+
+
+
+       
+        mult = new Decimal(1)
+
+
+        return mult
+    },
+
+    gainExp() { // Calculate the exponent on main currency from bonuses
+   
+       
+        let exp = new Decimal(1)
+      
+       
+        return exp;
+    },
+
+
+branches: ["n","s"],
+position:0,
+  
+    row: 3, // Row the layer is in on the tree (0 is the first row)
+  
+
+    layerShown(){return player.aN.tree == "normal"&&hasUpgrade("aperdinal",55)},
+   
+  
 })

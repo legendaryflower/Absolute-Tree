@@ -45,7 +45,7 @@ addLayer("ach", {
         15: {
             name: "Multiple Points",
             done() { return player.m.points.gte(1000) },
-            tooltip: "Reach 1000 Multi Points.",
+            tooltip: "Reach 1000 Multi Points.<br><i>Reward: Gain 20% more Multi Points.</i>",
         
         },
         16: {
@@ -57,7 +57,7 @@ addLayer("ach", {
         21: {
             name: "Beginning[COPYRIGHT CLAIMED]",
             done() { return player.a.unlocked },
-            tooltip: "Unlock Absolute layer.",
+            tooltip: "Unlock Absolute layer.<br><i>Reward: Unlock a new Multi Buyable and Points gain is raised ^1.2.</i>",
            unlocked() {return player.a.unlocked},
         },
         22: {
@@ -111,24 +111,24 @@ addLayer("ach", {
         34: {
             name: "SPLAT",
             done() { return hasUpgrade("a",32)||player.s.unlocked },
-            tooltip: "Unlock Squid Buyables",
+            tooltip: "Unlock Squid Buyables.<br><i>Reward: Lethality of Anti-Queens challenge is reduced by 50% and unlock Spectrality.</i>",
            unlocked() {return player.u.unlocked},
         },
         35: {
             name: "The Healing Tree?",
             done() { return player.n.unlocked },
-            tooltip: "Unlock Nursery layer.",
+            tooltip: "Unlock Nursery layer.<i>Reward: Multi Point exp+0.15, and Panda-Cola Biscuits hardcap start+0.01</i>",
            unlocked() {return player.n.unlocked},
         },
         36: {
             name: "The Not Healing Tree???",
-            done() { return hasChallenge("a",31)||player.s.unlocked },
+            done() { return hasChallenge("a",32)||player.s.unlocked },
             tooltip: "Complete the Anti-Nurses challenge.",
            unlocked() {return player.n.unlocked},
         },
         41: {
             name: "Extended Nursery",
-            done() { return hasUpgrade("a",36)||player.s.unlocked },
+            done() { return hasUpgrade("a",35)||player.s.unlocked },
             tooltip: "Unlock Type I Nurseries.",
            unlocked() {return player.n.unlocked},
         },
@@ -158,8 +158,8 @@ addLayer("ach", {
         },
         46: {
             name: "Ten tons of iron or a fat sunbird",
-            done() { return player.n.absolPer.gte(1e12)||player.s.unlocked },
-            tooltip: "Unlock Umvuthi.",
+            done() { return player.n.absolPer.gte(1e14)||player.s.unlocked },
+            tooltip: "Unlock Umvuthi.<br><i>Reward: Gain 10% more Absol Perpetuals</i>",
            unlocked() {return player.n.unlocked},
         },
         51: {
@@ -169,15 +169,15 @@ addLayer("ach", {
            unlocked() {return player.n.unlocked},
         },
         52: {
-            name: "Bye bye Nurses",
+            name: "Sessioned-in-points",
             done() { return player.s.unlocked },
-            tooltip: "Unlock Sessions.",
+            tooltip: "Unlock Sessions.<br><i>Reward: You can now have 3 Nurseries at a time.</i>",
            unlocked() {return player.s.unlocked},
         },
         53: {
             name: "CapCut",
             done() { return hasUpgrade("s",12) },
-            tooltip: "Purchase the Cheapcap upgrade.",
+            tooltip: "Purchase the Cheapcap upgrade.<br><i>Reward: Double Absol Perpetual gain.</i>",
            unlocked() {return player.s.unlocked},
         },
         54: {
@@ -189,7 +189,7 @@ addLayer("ach", {
         55: {
             name: "Hospital Tree now.",
             done() { return hasUpgrade("s",23) },
-            tooltip: "Unlock Therapy Sessions.",
+            tooltip: "Unlock Therapy Sessions.<br><i>Reward: Points gain is raised 1.01.</i>",
            unlocked() {return player.s.unlocked},
         },
         56: {
@@ -207,13 +207,13 @@ addLayer("ach", {
         62: {
             name: "Axis-Submit.",
             done() { return hasUpgrade("s",47) },
-            tooltip: "Unlock Axis-Z.",
+            tooltip: "Unlock Axis-Z.<br><i>Reward: Remove the Therapy Sessions effect nerfing Points gain.</i>",
            unlocked() {return player.s.unlocked},
         },
         63: {
             name: "Fox Actor",
             done() { return hasUpgrade("s",57) },
-            tooltip: "Unlock Musics.",
+            tooltip() {return "Unlock Musics.<br><i>Reward: Maker Axis-Z raises Points gain. Currently: ^"+format(Decimal.pow(1.005, player.s.makeraxisZ))+"."+"</i>" },
            unlocked() {return player.s.unlocked},
         },
         64: {
@@ -278,8 +278,8 @@ addLayer("ach", {
         },
         82: {
             name: "END THE WORLD NOW.",
-            done() { return player.s.points.gte(1e17)},
-            tooltip: "Reach 1e17 Sessions.",
+            done() { return player.s.points.gte(1e24)},
+            tooltip: "Reach 1e24 Sessions.",
            unlocked() {return player.sm.points.gte(1)||player.ab.unlocked},
         },
         83: {
@@ -302,14 +302,14 @@ addLayer("ach", {
         },
         86: {
             name: "Murray!",
-            done() { return player.ab.points.gte(1e9)},
-            tooltip: "Reach 1e9 Apeoblabla Points.",
+            done() { return player.ab.points.gte(1e24)},
+            tooltip: "Reach 1e24 Apeoblabla Points.",
            unlocked() {return player.ab.unlocked},
         },
         91: {
             name: "TIP: Do not eat Doritos daily!",
-            done() { return player.aD.nachoFed.gte(2e4)},
-            tooltip: "Have fed the sad tank 20,000 Nachos.",
+            done() { return player.aD.nachoFed.gte(1e9)},
+            tooltip: "Have fed the sad tank 1e9 Nachos.",
            unlocked() {return player.ab.unlocked},
         },
         92: {
@@ -331,15 +331,15 @@ addLayer("ach", {
            unlocked() {return player.aperdinal.total.gte(1)},
         },
         95: {
-            name: "Infinity Points!",
-            done() { return player.points.gte(Number.MAX_VALUE)&&player.s.unlocked},
-            tooltip: "Reach 1.8e308 Points",
+            name: "SO many Points!",
+            done() { return player.points.gte("1e22000")&&player.s.unlocked},
+            tooltip: "Reach 1e22,000 Points",
            unlocked() {return player.aperdinal.total.gte(1)},
         },
         96: {
             name: "Realm of the Power",
-            done() { return player.aP.points.gte(1e200)},
-            tooltip: "Reach 1e200 Apothetic Points.",
+            done() { return player.aP.points.gte("1e600")},
+            tooltip: "Reach 1e600 Apothetic Points.",
            unlocked() {return player.aperdinal.total.gte(1)},
         },
         101: {
@@ -360,13 +360,80 @@ addLayer("ach", {
             tooltip: "Have more Stabs than Aperdinal Points.",
            unlocked() {return player.aperdinal.total.gte(1)},
         },
-      
+        104: {
+            name: "'searching, book'",
+            done() { return player.aperdinal.tSP.gte(1)||player.aperdinal.tBP.gte(1)},
+            tooltip: "Get either 1 tSP or TBP.",
+           unlocked() {return hasUpgrade("aperdinal",37)},
+        },
+        105: {
+            name: "Ultimate Levels",
+            done() { return player.aperdinal.level.gte(75)},
+            tooltip: "Reach 75 Levels.",
+           unlocked() {return hasUpgrade("aperdinal",37)},
+        },      
+        106: {
+            name: "Iron Chainsaw",
+            done() { return player.ir.unlocked},
+            tooltip: "Unlock Irons.",
+           unlocked() {return player.ir.unlocked},
+        },    
+        111: {
+            name: "Billion Celestials!",
+            done() { return player.s.celestial.gte(1e11)},
+            tooltip: "Reach 1e11 Celestials.<br><i>Reward: Unlock The Exponent Tree (first RTLF2024's TMT).</i>",
+           unlocked() {return player.ir.unlocked},
+        },    
+        112: {
+            name: "The Exponent Tree Reference?",
+            done() { return player.aperdinal.exponentCoins.gte(1e12)},
+            tooltip: "Reach 1e12 Exponent Coins.",
+           unlocked() {return player.ir.unlocked},
+        },   
+        113: {
+            name: "Bro, let me poach trees!",
+            done() { return player.aperdinal.poachers.gte(1)},
+            tooltip: "Get 1 Poacher.",
+           unlocked() {return player.ir.unlocked},
+        },     
+        114: {
+            name: "Prestige Stabs",
+            done() { return player.aperdinal.stabs.gte(1e105)},
+            tooltip: "Reach 1e105 Stabs.",
+           unlocked() {return player.ir.unlocked},
+        }, 
+        115: {
+            name: "Kossed Up",
+            done() { return player.aperdinal.kos.gte(1)},
+            tooltip: "Get 1 Kos.",
+           unlocked() {return player.ir.unlocked},
+        },    
+        116: {
+            name: "Even Kossed Up",
+            done() { return getBuyableAmount("aperdinal",51).gte(3)},
+            tooltip: "Purchase the Kos Buyable 3 times.",
+           unlocked() {return player.ir.unlocked},
+        },   
+        121: {
+            name: "Kossers",
+            done() { return player.aperdinal.tossedKos.gte(1)},
+            tooltip: "Toss out all of your Kos.",
+           unlocked() {return player.ir.unlocked},
+        }, 
+        122: {
+            name: "Too many points!",
+            done() { return player.points.gte("1e2.6e4")},
+            tooltip: "Reach 1e26,000 Points.<br><i>Points gain is hatsuned to 1.001.</i>",
+           unlocked() {return player.ir.unlocked},
+        },     
     },
     tabFormat: [
         "blank", 
-        ["display-text", function() { return "You currently have obtained "+player.ach.achievements.length+"/"+(Object.keys(tmp.ach.achievements).length-2+" Achievements.")+"<br><br>Achievements right now don't give rewards. Rewards may be added in v0.4" }], 
+        ["display-text", function() { return "You currently have obtained "+player.ach.achievements.length+"/"+(Object.keys(tmp.ach.achievements).length-2+" Achievements.")+"" }], 
         "blank", "blank",
         "achievements",
+     
     ],
     
 })
+
