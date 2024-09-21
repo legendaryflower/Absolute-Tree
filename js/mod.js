@@ -13,13 +13,16 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3.4",
-	name: "Lani-Loli",
+	num: "0.3.41",
+	name: "",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v0.3.41</h3><br>
+- Fightpointed costs 1e225.<br>
+<br>
 <h3>v0.3.4 (Lani-Loli)</h3><br>
 - Added "Iron" layer.<br>
 - Added Quantum Masks.<br>
