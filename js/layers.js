@@ -567,7 +567,7 @@ currencyLayer: "n",
         46: {
             title: "Stross",
             description: "Multi Points exponent is added by your Points.",
-            cost: new Decimal(1e285),
+            cost: new Decimal(1e265),
            
             unlocked() {return hasUpgrade("m",45)},
             effect() {
@@ -590,7 +590,7 @@ currencyLayer: "n",
         47: {
             title: "Fancy Points",
             description: "Impossible Duke's effect is raised ^600.",
-            cost: new Decimal("1e372"),
+            cost: new Decimal("1e363"),
            
             unlocked() {return hasUpgrade("m",46)},
          
@@ -1450,7 +1450,7 @@ currencyLayer: "m",
         15: {
             title: "Ordinary Clover",
             description: "Multi Points multiply <b>Thumbcorn</b>'s effect.",
-            cost: new Decimal("1e377"),
+            cost: new Decimal("1e370"),
          unlocked () {return hasUpgrade("a",14)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
@@ -1470,7 +1470,7 @@ effectDisplay() { return format(tmp.a.upgrades[15].effect)+"x" },
         16: {
             title: "Golden Clover",
             description: "Points add to Absolute's effect base. Unlock Ultra Points",
-            cost: new Decimal("1e410"),
+            cost: new Decimal("1e405"),
          unlocked () {return hasUpgrade("a",15)},
 currencyDisplayName: "multi points",
 currencyInternalName: "points",
