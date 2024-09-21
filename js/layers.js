@@ -1004,7 +1004,7 @@ addLayer("a", {
     },
     upgradeNerfChallenge(x=challengeCompletions("a", 12)) {
       
-        let nerf = Decimal.add(2.5, Decimal.pow(x, 4).div(7))
+        let nerf = Decimal.add(1.25, Decimal.pow(x, 4).div(7))
         if (hasUpgrade("a",17)) nerf = nerf.times(0.9)
         return nerf;
     },
