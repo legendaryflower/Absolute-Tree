@@ -21,7 +21,7 @@ let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
 <h3>v0.3.41</h3><br>
-- Fightpointed costs 1e225.<br>
+- Progression during the 11-12 Absolute Points is now a little bit easier.
 <br>
 <h3>v0.3.4 (Lani-Loli)</h3><br>
 - Added "Iron" layer.<br>
