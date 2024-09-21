@@ -542,7 +542,7 @@ currencyLayer: "n",
         44: {
             title: "Fightpointed",
             description: "Unlock a new buyable.",
-            cost: new Decimal(1e235),
+            cost: new Decimal(1e225),
            
             unlocked() {return hasUpgrade("m",43)},
      
@@ -550,7 +550,7 @@ currencyLayer: "n",
         45: {
             title: "Bulldog Puffers",
             description: "Multi-multi points hardcap is raised based on Absolute Points.",
-            cost: new Decimal(1e237),
+            cost: new Decimal(1e227),
            
             unlocked() {return hasUpgrade("m",44)},
             effect() {
@@ -567,7 +567,7 @@ currencyLayer: "n",
         46: {
             title: "Stross",
             description: "Multi Points exponent is added by your Points.",
-            cost: new Decimal(1e300),
+            cost: new Decimal(1e285),
            
             unlocked() {return hasUpgrade("m",45)},
             effect() {
