@@ -845,7 +845,7 @@ currencyLayer: "n",
         22: {
           
             title() {return "Spectral Points"},
-                cost(x) { return new Decimal("1e235").mul(new Decimal(1e3).pow(x))},
+                cost(x) { return new Decimal("1e225").mul(new Decimal(1e3).pow(x))},
             
                 display() { // Everything else displayed in the buyable button after the title
                     let data = tmp[this.layer].buyables[this.id]
