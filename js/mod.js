@@ -1,9 +1,9 @@
 let modInfo = {
-	name: "Absolute Tree",
-	id: "AbsoluteTree",
-	author: "RTLF2024",
+	name: "Project: Everything Tree",
+	id: "ProjectEverythingTree",
+	author: "RTLF2025",
 	pointsName: "points",
-	modFiles: ["layers.js", "tree.js", "achievements.js", "apotheicLayers.js", "lore.js"],
+	modFiles: ["layers.js", "layerLayers.js", "tree.js", "achievements.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,13 +13,19 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.3.4",
-	name: "Lani-Loli",
+	num: "1.0",
+	name: "",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v1.0 - Rebrand</h3><br>
+- Game has been rebranded to Projecet: Everything Tree, because I don't want to go to my past where I spammed a bunch of random images.<br>
+- This game is inspired of The Multitree and Communitree
+<br>
+<h3>v0.3.41 (Balancing Changes)</h3><br>
+- Progression during the 11-12 Absolute Points is now a little bit easier.<br><br>
 <h3>v0.3.4 (Lani-Loli)</h3><br>
 - Added "Iron" layer.<br>
 - Added Quantum Masks.<br>
@@ -146,68 +152,11 @@ function getPointGen() {
 		return new Decimal(0)
 
 	let gain = new Decimal(1)
+ if (hasUpgrade("p",11)) gain = gain.times(upgradeEffect("p",11))
+	if (hasUpgrade("p",12)) gain = gain.times(upgradeEffect("p",12))
+		if (player.b.unlocked) gain = gain.times(tmp.b.effect)
 
-	if (hasUpgrade("m",11)) gain = gain.times(2)
-	if (hasUpgrade("m",12)) gain = gain.times(upgradeEffect("m",12))
-	if (hasUpgrade("m",13)) gain = gain.times(upgradeEffect("m",13))
-	if (hasUpgrade("m",15)) gain = gain.times(upgradeEffect("m",15))
-	if (hasUpgrade("a",12)) gain = gain.pow(upgradeEffect("a",12))
-	if (hasUpgrade("m",33)) gain = gain.pow(1.2)
-	if (hasUpgrade("m",57)) gain = gain.pow(1.05)
-	if (inChallenge("a",21)) gain = gain.root(1e27)
-	if (hasAchievement("ach",21)) gain = gain.pow(1.2)
-	if (player.a.unlocked) gain = gain.times(tmp.a.effect)
-	if (player.m.unlocked) gain = gain.times(tmp.m.buyables[11].effect.first);
-	if (hasUpgrade("a",21)) gain = gain.times(tmp.a.buyables[12].effect.first);
-	if (hasUpgrade("a",31)) gain = gain.pow(upgradeEffect("a",31))
-
-	if (player.n.unlocked) gain = gain.times(tmp.n.buyables[11].effect.first);
-	if (hasUpgrade("n",11)) gain = gain.times(upgradeEffect("n",11));
- 
-	if (inChallenge("a",32)) gain = gain.pow(0.08)
-	if (hasUpgrade("a",35)) gain = gain.pow(tmp.n.buyables[12].effect.first);
-	if (hasUpgrade("n",16)) gain = gain.times(upgradeEffect("n",16));
-	if (hasUpgrade("n",23)) gain = gain.times(upgradeEffect("n",23));
-	
-
-	if (hasAchievement("ach",34)) gain = gain.times(tmp.m.buyables[23].effect.first)
-	if (hasAchievement("ach",55)) gain = gain.pow(1.01)
-	if (hasUpgrade("m",55)) gain = gain.pow(1.11)
-	if (hasUpgrade("s",15)) gain = gain.times(upgradeEffect("s",15))
-	if (hasUpgrade("m",31)) gain = gain.pow(upgradeEffect("m",31))
-	if (hasUpgrade("s",23)&&!hasAchievement("ach",62)) gain = gain.div(tmp.s.theraEffect)
-	if (hasAchievement("ach",63)) gain = gain.pow(Decimal.pow(1.005, player.s.makeraxisZ))
-	if (hasUpgrade("s",36)) gain = gain.times(upgradeEffect("s",36))
-	if (hasUpgrade("s",56)) gain = gain.pow(1.3)
-	if (hasMilestone("sm",0)) gain = gain.pow(1.05)
-	if (hasUpgrade("s",103)) gain = gain.times(upgradeEffect("s",103))
-	if (hasUpgrade("s",104)) gain = gain.times(upgradeEffect("s",104))
-	if (hasUpgrade("s",105)) gain = gain.times(upgradeEffect("s",105))
-	if (hasUpgrade("s",107)) gain = gain.times(upgradeEffect("s",107))
-	if (hasMilestone("sm",2)) gain = gain.times(tmp.s.Buyable41Eff)
-
-	if (player.ab.unlocked) gain = gain.times(tmp.ab.effect)
-	if (hasUpgrade("aP",13)) gain = gain.times(upgradeEffect("aP",13))
-	if (hasUpgrade("aP",21)) gain = powExp(gain,1.01)
-	if (hasUpgrade("a",47)) gain = powExp(gain,1.001)
-	if (hasUpgrade("aP",25)) gain = gain.pow(1.05)
-	if (hasUpgrade("m",44)) gain = gain.times(tmp.m.buyables[22].effect.first);
-	if (hasUpgrade("aM",12)) gain = gain.pow(upgradeEffect("aM",12))
-	if (hasUpgrade("aD",25)) gain = gain.times(upgradeEffect("aD",25))
-	if (hasUpgrade("aD",34)) gain = gain.pow(1.01)
-	if (hasUpgrade("aM",13)) gain = gain.times(tmp.aP.buyables[11].effect.first);
-	if (getBuyableAmount("ab",11).gte(4)) gain = gain.times(tmp.aT.effect)
-
-	
-	if (hasMilestone("aperdinal",0)) gain = gain.pow(1.1)
-	if (hasUpgrade("aperdinal",11)) gain = gain.pow(1.005)
-	if (hasMilestone("aperdinal",10)) gain = powExp(gain,1.001)
-	if (hasUpgrade("aperdinal",21)) gain = gain.times(upgradeEffect("aperdinal",21))
-	if (hasUpgrade("aperdinal",85)) gain = gain.pow(1.01)
-	if (hasUpgrade("aN",11)) gain = gain.pow(tmp.aperdinal.tosKosEff)
-	if (hasUpgrade("aN",11)) gain = gain.times(upgradeEffect("aN",11))
-	if (hasAchievement("ach",122)) gain = powExp(gain,1.001)
-	if (gain.gte("1e30000")) return new Decimal("1e30000")
+	if (hasUpgrade("p",16)) gain = gain.times(upgradeEffect("p",16))
 	return gain
 }
 
@@ -216,16 +165,13 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: 'g' Purchased.`,
+var displayThings = [`<span>Current Endgame: Reach 5 boosters.`,
 function() {return "TPS: "+formatWhole(player.ach.fps)},
-() => player.ab.unlocked&&!getBuyableAmount("ab",11).gte(4) ? '<small><font color="gray">To continue progressing, click/tap on the yellow side layer<br>and click on "Click here to switch to Apotheic Tree"</font></small>.' : '',
-() => hasMilestone("aperdinal",0)&&!hasUpgrade("aN",13) ? '<small><font color="gray">There is lore about Aperdinal layer, to view click/tap on the yellow side layer<br>and click on "Aperdinality Lore"</font></small>.' : '',
-() => hasUpgrade("aN",13) ? '<small><font color="purple">After endgame, the game may not be balanced.' : '',
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return hasUpgrade("aN",13)
+	return player.b.points.gte(5)
 }
 
 
@@ -245,4 +191,6 @@ function maxTickLength() {
 // Use this if you need to undo inflation from an older version. If the version is older than the version that fixed the issue,
 // you can cap their current resources with this.
 function fixOldSave(oldVersion){
+	
 }
+

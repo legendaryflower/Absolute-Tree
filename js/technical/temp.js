@@ -29,6 +29,7 @@ function setupTemp() {
 	tmp.displayThings = []
 	tmp.scrolled = 0
 	tmp.gameEnded = false
+
 	funcs = {}
 	
 	setupTempData(layers, tmp, funcs)
@@ -111,6 +112,7 @@ function updateTemp() {
 	}
 
 	tmp.pointGen = getPointGen()
+
 	tmp.backgroundStyle = readData(backgroundStyle)
 
 	tmp.displayThings = []

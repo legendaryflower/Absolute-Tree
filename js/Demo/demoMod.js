@@ -1,6 +1,6 @@
 let modInfo = {
 	name: "The Modding Tree",
-	id: "modbase",
+	id: "Can you stop TMT from eating his cheeseburger?",
 	pointsName: "points",
 	modFiles: ["Demo/layers/c.js", "Demo/layers/f.js", "Demo/layers/a.js", "Demo/demoTree.js"],
 

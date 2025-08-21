@@ -342,8 +342,9 @@ function gameLoop(diff) {
 		for (item in TREE_LAYERS[x]) {
 			let layer = TREE_LAYERS[x][item]
 			player[layer].resetTime += diff
-			if (tmp[layer].passiveGeneration) generatePoints(layer, diff*tmp[layer].passiveGeneration);
-			if (layers[layer].update) layers[layer].update(diff);
+			let speed = new Decimal(1)
+			if (tmp[layer].passiveGeneration) generatePoints(layer, speed.times(diff*tmp[layer].passiveGeneration));
+			if (layers[layer].update) layers[layer].update(speed.times(diff));
 		}
 	}
 
@@ -362,7 +363,9 @@ function gameLoop(diff) {
 			if (tmp[layer].autoPrestige && tmp[layer].canReset) doReset(layer);
 			if (layers[layer].automate) layers[layer].automate();
 			if (tmp[layer].autoUpgrade) autobuyUpgrades(layer)
+				
 		}
+	
 	}
 
 	for (row in OTHER_LAYERS){

@@ -1,6 +1,7 @@
 var testTree = [["f", "c"],
 ["g", "spook", "h"]]
 
+alert("Cannot play the game. Reason: Cheeseburger is being eaten by TMT.")
 addLayer("c", {
         layer: "c", // This is assigned automatically, both to the layer and all upgrades, etc. Shown here so you know about it
         name: "Candies", // This is optional, only used in a few places, If absent it just uses the layer id.
