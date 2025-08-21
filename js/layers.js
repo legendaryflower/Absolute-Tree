@@ -1,195 +1,188 @@
-let modInfo = {
-	name: "Project: Everything Tree",
-	id: "ProjectEverythingTree",
-	author: "RTLF2025",
-	pointsName: "points",
-	modFiles: ["layers.js", "layerLayers.js", "tree.js", "achievements.js"],
-
-	discordName: "",
-	discordLink: "",
-	initialStartPoints: new Decimal (10), // Used for hard resets and new players
-	offlineLimit: 1,  // In hours
-}
-
-// Set your version in num and name
-let VERSION = {
-	num: "1.0",
-	name: "",
-}
-
-let changelog = `<h1>Changelog:</h1><br>
-<br>
-<font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
-<h3>v1.0 - Rebrand</h3><br>
-- Game has been rebranded to Projecet: Everything Tree, because I don't want to go to my past where I spammed a bunch of random images.<br>
-- This game is inspired of The Multitree and Communitree
-<br>
-<h3>v0.3.41 (Balancing Changes)</h3><br>
-- Progression during the 11-12 Absolute Points is now a little bit easier.<br><br>
-<h3>v0.3.4 (Lani-Loli)</h3><br>
-- Added "Iron" layer.<br>
-- Added Quantum Masks.<br>
-- Reworked a lot of content.<br>
-- Added Tactics.<br>
-- Fixed Nacho Intubatiers tab that aren't supposed to appear when Apotheic Dimensions 22 isn't purchased.<br>
-- Added Exponent Tree.<br>
-- Added Lani-Loli (Kos currently).<br>
-- Added Quantum Upgrades.<br>
-- Balanced up to having 'g' purchased.<br>
-<br>
-<h3>v0.3.3 Beta</h3><br>
-
-
-<b>Hotfixes:</b><br>
-- Fixed a bug with Absolute Milestones obtaining.<br>
-- Made the free levels amount of Points and Multi Points buyables less chunky. (too much zeros).<br>
-- Fixed a bug where you can get the You there? achievement anytime without actually unlocking Stabverse.<br><br>
-<b>Major changes:</b><br>
-- Fixed a bug within purchasing any Axis Squared buyables.<br>
-- Added 1 new Normal Tree Layer.<br>
-- Added Apotheic Tree Layers.<br>
-- After resetting for Session layer for first time, Free Multi Points now gives free levels to Multi Points (buyable).<br>
-- Added TPS (Ticks per second) counter below endgame reach text.<br>
-- Added QoL tooltips to some upgrades.<br>
-- Added 1 more Absolute Buyable.<br>
-- Added 2 more Absolute Upgrades.<br>
-- Added 3 new Session Upgrades.<br>
-- Changed the NaN message to display what caused the NaN bug (Bugged at moment!).<br>
-- Added a message after reaching the endgame. The message is below the TPS counter.<br>
-- Added Achievements. Right now they are cosmetic and do nothing.<br>
-- Balanced up to 1e31 Stabs.<br>
-- Changed the win message.<br>
-<br>
-<h3>v0.3.2 Beta</h3><br>
-- Added 1 new Multi Buyable.<br>
-- Added 2 more Smackery Alterations.<br>
-- Added Sanctuaries and Awakening Forms.<br>
-- Added squared forms of Axis.<br>
-- Added Celestial Upgrades.<br>
-- Added 7 new Session Buyables.<br>
-- Balanced up to 1,000 Celestials.<br>
-<br>
-<h3>v0.3.1 Beta</h3><br>
-- Added Smackeries.<br>
-- Added Therapy Sessions.<br>
-- Added Axis.<br>
-- Added Musics. (no, im not copying camellia tree)<br>
-- Made the Ichorpuff weaken the softcap.<br>
-- Added 40 new Session Upgrades.<br>
-- Balanced up to a day duration Fox Music with Smackery Level I.<br>
-<br>
-<h3>v0.3 Beta</h3><br>
-- Font changed into Nova Mono.<br>
-- Added a hotkey to reset for Ultra Points.<br>
-- Balanced up to Ichorpuff upgrade purchased.<br>
-- Added 2 more Absolute Upgrades.<br>
-- Completed the Absol Perpetuals mechanic.<br>
-- Added Umvuthi, the Sunbird (Mowzie Mob's reference).<br>
-- Added 10 new Nursery Upgrades.<br>
-- Added 5 new Nursery Buyables.<br>
-- Added a joke tree. Try to figure out where it is.<br>
-- Added a new layer.<br>
-<br>
-<h3>v0.2.4 Alpha</h3><br>
-- Added Nurses.<br>
-- Added 1 new Multi Upgrade.<br>
-- Added 7 new Absolute Upgrades.<br>
-- Added 1 new Absolute Buyables.<br>
-- Added 1 more Absolute Challenge.<br>
-- Balanced early game mechanics.<br>
-- Balanced up to 1 Absol Perpetual.<br>
-<br>
-<h3>v0.2.3 Alpha</h3><br>
-- Added 3 more Absolute Buyables.<br>
-- Added 3 more Absolute Upgrades.<br>
-- Balanced up to 1e1,429 Multi Points.<br>
-<br>
-<h3>v0.2.2 Alpha</h3><br>
-- Fixed a typo in upgrade name "Multipotenint".<br>
-- Added Absolute Buyables.<br>
-- Added Absolute Upgrades.<br>
-- Added 3 more Absolute Challenges.<br>
-- Added Ultra Points.<br>
-- Balanced up to 1e1,045 Multi Points.<br>
-<br>
-<h3>v0.2.1 Alpha</h3><br>
-- Added more upgrades<br>
-- Changed the Lucky Chancemakers reward. <br>
-- Added a repeatable Absolute Challenge. <br>
-- Added 2 more Absolute Milestones. <br>
-- Balanced up to 1e285 Multi Points. <br>
-<br>
-<h3>v0.2 Alpha</h3><br>
-- Added a new layer.<br>
-- Added 4 new Multi Upgrades.<br>
-- Added 2 new Multi Buyables.<br>
-- Balanced up to a Lucky Chancemakers completion.<br>
-<br>
-<h3>v0.1.1 Alpha</h3><br>
-- Game is renamed into Absolute Tree to prevent confusion. 
-<br><br>
-	<h3>v0.1 Alpha</h3><br>
-		- Release of the game.`
-
-let winText = `You have beaten the game... After the endgame, the game may not be balanced.`
-
-// If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
-// (The ones here are examples, all official functions are already taken care of)
-var doNotCallTheseFunctionsEveryTick = ["blowUpEverything"]
-
-function getStartPoints(){
-    return new Decimal(modInfo.initialStartPoints)
-}
-
-// Determines if it should show points/sec
-function canGenPoints(){
-	return true
-}
-
-// Calculate points/sec!
-function getPointGen() {
-	if(!canGenPoints())
-		return new Decimal(0)
-
-	let gain = new Decimal(1)
- if (hasUpgrade("p",11)) gain = gain.times(upgradeEffect("p",11))
-	if (hasUpgrade("p",12)) gain = gain.times(upgradeEffect("p",12))
-		if (player.b.unlocked) gain = gain.times(tmp.b.effect)
-
-	if (hasUpgrade("p",16)) gain = gain.times(upgradeEffect("p",16))
-	return gain
-}
-
-// You can add non-layer related variables that should to into "player" and be saved here, along with default values
-function addedPlayerData() { return {
-}}
-
-// Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: Reach 5 boosters.`,
-function() {return "TPS: "+formatWhole(player.ach.fps)},
-]
-
-// Determines when the game "ends"
-function isEndgame() {
-	return player.b.points.gte(5)
-}
-
-
-
-// Less important things beyond this point!
-
-// Style for the background, can be a function
-var backgroundStyle = {
-
-}
-
-// You can change this if you have things that can be messed up by long tick lengths
-function maxTickLength() {
-	return(3600) // Default is 1 hour which is just arbitrarily large
-}
-
-// Use this if you need to undo inflation from an older version. If the version is older than the version that fixed the issue,
-// you can cap their current resources with this.
-function fixOldSave(oldVersion){
+addLayer("p", {
+    name: "prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "#31aeb0",
+    requires: new Decimal(10), // Can be a function that takes requirement increases into account
+    resource: "prestige points", // Name of prestige currency
+    baseResource: "points", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        if (hasUpgrade("p",13)) mult = mult.times(upgradeEffect("p",13))
+			        if (hasUpgrade("p",15)) mult = mult.times(upgradeEffect("p",15))
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        return new Decimal(1)
+    },
+    row: 0, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return player.l.tree == "jacorb";},
+    upgrades: {
+		
+			
+			11: {
+				title: "Prestige Boost",
+				description: "Prestige Points boost Point generation.",
+	cost() { return new Decimal(1) },
+				effect() {
+					
+					
+					let eff = player.p.points.plus(1).pow(0.5);
+			
+					
+					return eff;
+				},
 	
-}
+					effectDisplay() { return format(tmp.p.upgrades[11].effect)+"x" },
+			},
+			12: {
+				title: "Self-Synergy",
+				description: "Points boost their own generation.",
+				cost() { return new Decimal(5) },
+				effect() { 
+					let eff = player.points.plus(1).log10().pow(0.5).plus(1);
+	
+					return eff;
+				},
+				unlocked() { return hasUpgrade("p", 11) },
+				effectDisplay() { return format(tmp.p.upgrades[12].effect)+"x" },
+				
+			},
+            13: {
+				title: "Reverse Prestige Boost",
+				description: "Points boost Prestige Points gain.",
+				cost() { return new Decimal(25) },
+				effect() { 
+					let eff = player.points.plus(1).pow(0.3);
+	
+					return eff;
+				},
+				unlocked() { return hasUpgrade("p", 12) },
+				effectDisplay() { return format(tmp.p.upgrades[13].effect)+"x" },
+				
+			},
+		14: {
+				title: "Circular Synergy",
+				description: "Prestige Points boost their own gain.",
+				cost() { return new Decimal(50) },
+				effect() { 
+					let eff = player.p.points.plus(1).log10().pow(0.3).plus(1);
+	
+					return eff;
+				},
+				unlocked() { return hasUpgrade("p", 13) },
+				effectDisplay() { return format(tmp.p.upgrades[14].effect)+"x" },
+				
+			},
+		
+        	15: {
+				title: "Boosting Privileges",
+				description: "Boosters boost Prestige points.",
+				cost() { return new Decimal(150) },
+				effect() { 
+					let eff = player.b.points.plus(1)
+	
+					return eff;
+				},
+				unlocked() { return hasUpgrade("p", 14)&&player.b.unlocked  },
+				effectDisplay() { return format(tmp.p.upgrades[15].effect)+"x" },
+				
+			},
+				16: {
+				title: "Boosting Trust",
+				description: "Boosters boost points.",
+				cost() { return new Decimal(800) },
+				effect() { 
+					let eff = player.b.points.plus(1).pow(2)
+	
+					return eff;
+				},
+				unlocked() { return hasUpgrade("p", 15)&&player.b.points.gte(2)  },
+				effectDisplay() { return format(tmp.p.upgrades[16].effect)+"x" },
+				
+			},
+			17: {
+				title: "Upgrade Power",
+				description: "Point gain is multipled based on your Prestige upgrades bought.",
+				cost() { return new Decimal(1600) },
+				effect() { 
+					let eff = Decimal.pow(1.3, player.p.upgrades.length);
+				
+					return eff;
+				},
+				unlocked() { return hasUpgrade("p", 16)&&player.b.points.gte(3)  },
+				effectDisplay() { return format(tmp.p.upgrades[17].effect)+"x" },
+				
+			},
+		},
+    
+})
+
+addLayer("b", {
+    name: "booster", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "B", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    startData() { return {
+        unlocked: true,
+		points: new Decimal(0),
+    }},
+    color: "#6e64c4",
+    requires: new Decimal(200), // Can be a function that takes requirement increases into account
+    resource: "boosters", // Name of prestige currency
+    baseResource: "prestige points", // Name of resource prestige is based on
+    baseAmount() {return player.p.points}, // Get the current amount of baseResource
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 1, // Prestige currency exponent
+    base: 1,
+    gainMult() { // Calculate the multiplier for main currency from bonuses
+        mult = new Decimal(1)
+        
+        return mult
+    },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        return new Decimal(1)
+    },
+    row: 1, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "B", description: "B: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown(){return player.l.tree == "jacorb"&&hasAchievement("ach",13);},
+   branches: ["p"],
+   addToBase() {
+			let base = new Decimal(0);
+		
+			return base;
+		},
+		effectBase() {
+			let base = new Decimal(2);
+			
+			// ADD
+			base = base.plus(tmp.b.addToBase);
+			
+			// MULTIPLY
+			
+			return base.pow(tmp.b.power);
+		},
+		power() {
+			let power = new Decimal(1);
+			
+			return power;
+		},
+		effect() {
+			if (!player.b.unlocked) return new Decimal(1);
+			return Decimal.pow(tmp.b.effectBase, player.b.points).max(0);
+		},
+		effectDescription() {
+			return "which are boosting Point generation by "+format(tmp.b.effect)+"x."
+		},
+})
