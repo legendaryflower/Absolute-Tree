@@ -1,7 +1,7 @@
 * {
 	transition-duration: 0.5s;
 	text-align: center;
-	font-family: "Nova Mono";
+	font-family: "Inconsolata", monospace;
 	font-weight: bold;
 	table-align: center;
 	margin: auto;
@@ -242,16 +242,9 @@ button > * {
 	position: absolute;
 	top: 0
 }
-.nodeRow {
-	display: flex !important;
-	flex-flow: row wrap;
-	justify-content: center;
-	align-items: center;
-	max-width: 100%;
-}
+
 .noBackground {
 	background: transparent !important;
 	background-image: none !important;
 	--background: transparent !important;
 }
-
