@@ -185,5 +185,4 @@ addLayer("b", {
 		effectDescription() {
 			return "which are boosting Point generation by "+format(tmp.b.effect)+"x."
 		},
-
 })
