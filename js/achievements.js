@@ -42,6 +42,12 @@ addLayer("ach", {
             tooltip: "Purchase Prestige upgrade 15.",
         
         },
+          15: {
+            name: "Generateoh",
+            done() { return player.g.unlocked},
+            tooltip: "Unlock Generators.",
+        
+        },
          21: {
             name: "True Boost",
            done() { return player.b.unlocked},
@@ -54,6 +60,27 @@ addLayer("ach", {
            done() { return player.b.points.gte(5)},
          
             tooltip: "Reach 5 boosters.",
+        
+        },
+          23: {
+            name: "Millionaire",
+           done() { return player.points.gte(1e6)},
+         
+            tooltip: "Reach 1 million Points.<br><small>Reward: Boost booster effect by 20%</small>",
+        
+        },
+         31: {
+            name: "Where's Gen Z^1?",
+           done() { return hasUpgrade("b",21)},
+         
+            tooltip: "Buy the Booster Upgrade 21.",
+        
+        },
+          32: {
+            name: "The Odyssey of Layers",
+           done() { return player.t.unlocked},
+         
+            tooltip: "Unlock Time Capsules.<br><small>Unlocking this unlocks a new tree layer. Check Layers tree for more info.</small>",
         
         },
     },

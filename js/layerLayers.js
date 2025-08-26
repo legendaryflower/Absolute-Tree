@@ -60,11 +60,33 @@ addLayer("l", {
                 return dis
             },
             canClick() {
+                return player.t.unlocked
+            },
+            tooltip() {  return (!player.t.unlocked?"Unlock Time Capsules to unlock this layer!":"") }, 
+            onClick() {
+             player.l.tree = "acamaeda"
+                },
+                style: {'height':'64px', 'width':'128px', 'font-size':'13px',
+               
+            
+            },
+            
+      
+        },
+         13: {
+          
+            display() {
+                let dis = "Click to view okamii's layers"
+            
+           
+                return dis
+            },
+            canClick() {
                 return false
             },
-            tooltip() {return "Coming soon!"},
+            tooltip() {return "Coming soon"},
             onClick() {
-             player.l.tree = "jacorb"
+             player.l.tree = "okamii"
                 },
                 style: {'height':'64px', 'width':'128px', 'font-size':'13px',
                

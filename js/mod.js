@@ -3,7 +3,7 @@ let modInfo = {
 	id: "ProjectEverythingTree",
 	author: "RTLF2025",
 	pointsName: "points",
-	modFiles: ["layers.js", "layerLayers.js", "tree.js", "achievements.js"],
+	modFiles: ["layers.js", "candy.js", "layerLayers.js", "tree.js", "achievements.js"],
 
 	discordName: "",
 	discordLink: "",
@@ -13,17 +13,23 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "1.0",
+	num: "1.0.5",
 	name: "",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 <br>
 <font color="red"><i><h3>SPOILERS WARNING!</h3></i></font><br><br>
+<h3>v1.0.5 - Candy Update</h3><br>
+- Added Booster upgrades.<br>
+- Added generators.<br>
+- Added a new tree layer.<br>
+- Balanced up to 100 lollipops.<br>
+<br><br>
 <h3>v1.0 - Rebrand</h3><br>
 - Game has been rebranded to Projecet: Everything Tree, because I don't want to go to my past where I spammed a bunch of random images.<br>
-- This game is inspired of The Multitree and Communitree
-<br>
+- This game is inspired of The Multitree and Communitree<br>
+<br><br>
 <h3>v0.3.41 (Balancing Changes)</h3><br>
 - Progression during the 11-12 Absolute Points is now a little bit easier.<br><br>
 <h3>v0.3.4 (Lani-Loli)</h3><br>
@@ -157,6 +163,9 @@ function getPointGen() {
 		if (player.b.unlocked) gain = gain.times(tmp.b.effect)
 
 	if (hasUpgrade("p",16)) gain = gain.times(upgradeEffect("p",16))
+
+	if (player.g.unlocked) gain = gain.times(tmp.g.powerEff)
+		if (hasUpgrade("g",15)) gain = gain.pow(1.5)
 	return gain
 }
 
@@ -165,13 +174,13 @@ function addedPlayerData() { return {
 }}
 
 // Display extra things at the top of the page
-var displayThings = [`<span>Current Endgame: Reach 5 boosters.`,
+var displayThings = [`<span>Current Endgame: Reach 100 Lollipops.`,
 function() {return "TPS: "+formatWhole(player.ach.fps)},
 ]
 
 // Determines when the game "ends"
 function isEndgame() {
-	return player.b.points.gte(5)
+	return player.c.points.gte(100)
 }
 
 
